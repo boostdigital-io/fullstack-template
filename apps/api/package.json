@@ -4,7 +4,8 @@
   "type": "module",
   "dependencies": {
     "@repo/contract": "workspace:*",
-    "@repo/domain": "workspace:*"
+    "@repo/domain": "workspace:*",
+    "zod": "4.1.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
