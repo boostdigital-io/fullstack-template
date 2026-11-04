@@ -1,1 +1,1 @@
-export {};
+export const n: number = "x";
