@@ -1,13 +1,13 @@
 {
-	"name": "@repo/domain",
-	"private": true,
-	"type": "module",
-	"exports": {
-		".": "./src/index.ts",
-		"./*": "./src/*/index.ts",
-		"./example/*": "./example/*/index.ts"
-	},
-	"scripts": {
-		"typecheck": "tsc --noEmit"
-	}
+  "name": "@repo/domain",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*/index.ts",
+    "./example/*": "./example/*/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
 }
