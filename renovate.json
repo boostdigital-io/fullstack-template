@@ -1,0 +1,36 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "timezone": "Europe/Amsterdam",
+  "schedule": ["* 0-5 * * 1"],
+  "minimumReleaseAge": "3 days",
+  "rangeStrategy": "pin",
+  "platformAutomerge": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["* 0-5 1 * *"]
+  },
+  "packageRules": [
+    {
+      "description": "Effect samen in één PR. typescript hoort erbij: @effect/tsgo levert de TypeScript-build mee waarop de editor draait.",
+      "groupName": "effect",
+      "matchPackageNames": ["effect", "@effect/**", "typescript"]
+    },
+    {
+      "description": "TanStack samen in één PR.",
+      "groupName": "tanstack",
+      "matchPackageNames": ["@tanstack/**"]
+    },
+    {
+      "description": "Minor en patch mergen vanzelf bij groene CI. Majors nooit.",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "description": "Effect alleen patches automatisch: ook een minor kan breken in effect/unstable (HttpApi).",
+      "matchPackageNames": ["effect", "@effect/**", "typescript"],
+      "matchUpdateTypes": ["minor"],
+      "automerge": false
+    }
+  ]
+}
