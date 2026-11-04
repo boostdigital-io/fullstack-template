@@ -28,7 +28,7 @@
     },
     {
       "description": "Effect alleen patches automatisch: ook een minor kan breken in effect/unstable (HttpApi).",
-      "matchPackageNames": ["effect", "@effect/**"],
+      "matchPackageNames": ["effect", "@effect/**", "typescript"],
       "matchUpdateTypes": ["minor"],
       "automerge": false
     }
