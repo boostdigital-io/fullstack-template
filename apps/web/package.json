@@ -1,11 +1,11 @@
 {
-	"name": "@repo/web",
-	"private": true,
-	"type": "module",
-	"dependencies": {
-		"@repo/contract": "workspace:*"
-	},
-	"scripts": {
-		"typecheck": "tsc --noEmit"
-	}
+  "name": "@repo/web",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@repo/contract": "workspace:*"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
 }

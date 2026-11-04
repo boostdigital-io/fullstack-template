@@ -1,12 +1,12 @@
 {
-	"name": "@repo/api",
-	"private": true,
-	"type": "module",
-	"dependencies": {
-		"@repo/contract": "workspace:*",
-		"@repo/domain": "workspace:*"
-	},
-	"scripts": {
-		"typecheck": "tsc --noEmit"
-	}
+  "name": "@repo/api",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@repo/contract": "workspace:*",
+    "@repo/domain": "workspace:*"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
 }
