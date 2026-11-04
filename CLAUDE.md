@@ -1,105 +1,35 @@
-Default to using Bun instead of Node.js.
+# CLAUDE.md
 
-- Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
+Tijdelijke versie. De volledige `CLAUDE.md` volgt in BOO-112.
 
-## APIs
+## Wat dit is
 
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
+Een fullstack-template, nog in opbouw.
 
-## Testing
+- Het Linear-issue van de sessie is de bron van waarheid en bepaalt de scope: doe niets daarbuiten.
+- Achtergrond, besluiten en conventies staan in het plan: https://claude.ai/artifact/ECzxwZiTRNPX9xww482Y8E
 
-Use `bun test` to run tests.
+## Stack
 
-```ts#index.test.ts
-import { test, expect } from "bun:test";
+Bun als package manager en tooling, Cloudflare Workers als runtime, Effect v4, TanStack Start, Drizzle, Better Auth, Vitest.
 
-test("hello world", () => {
-  expect(1).toBe(1);
-});
-```
+## Wat er nu staat
 
-## Frontend
+- Workspaces: `apps/api`, `apps/web`, `packages/domain`, `packages/contract`, elk met `src/` en `example/`.
+- `example/` is voor de referentie-feature: wordt niet gebouwd, en `src/` importeert er nooit uit (Biome dwingt dat af).
+- Biome voor lint en formatting, Husky voor git hooks, CI in GitHub Actions.
 
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
+## Commando's
 
-Server:
+- `bun run check`: lint en typecheck. Draai dit voor elke commit.
+- `bun run lint`: Biome-check.
+- `bun run format`: Biome met automatische fixes.
+- `bun run typecheck`: typecheck in alle workspaces.
 
-```ts#index.ts
-import index from "./index.html"
+## Harde regels
 
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
-```
-
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
-
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-import { createRoot } from "react-dom/client";
-
-// import .css files directly and it works
-import './index.css';
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
-
-```sh
-bun --hot ./index.ts
-```
-
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+- Geen `Bun.*`-API's in code die op Workers draait.
+- Tests komen met Vitest (BOO-120). Gebruik nooit `bun test`.
+- Conventional Commits, met `Refs: BOO-<n>` als footer.
+- Nooit naar `main` pushen en nooit zelf mergen.
+- Geen nieuwe dependencies zonder eerst te vragen.
