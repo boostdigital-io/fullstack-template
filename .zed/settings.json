@@ -1,0 +1,87 @@
+// Projectinstellingen voor Zed. Wat je bij opslaan ziet, is wat `bun run lint` in CI ziet.
+//
+// Benodigde extensies: "Biome" en "TypeScript Language Server" (id: tsgo).
+// Zed past deze instellingen pas toe nadat je de map als vertrouwd hebt gemarkeerd.
+{
+  "format_on_save": "on",
+
+  "languages": {
+    "TypeScript": {
+      "language_servers": [
+        "typescript-ls",
+        "biome",
+        "!vtsls",
+        "!typescript-language-server",
+        "!eslint",
+        "..."
+      ],
+      "formatter": { "language_server": { "name": "biome" } },
+      "prettier": { "allowed": false },
+      "code_actions_on_format": {
+        "source.fixAll.biome": true,
+        "source.organizeImports.biome": true
+      }
+    },
+    "TSX": {
+      "language_servers": [
+        "typescript-ls",
+        "biome",
+        "!vtsls",
+        "!typescript-language-server",
+        "!eslint",
+        "..."
+      ],
+      "formatter": { "language_server": { "name": "biome" } },
+      "prettier": { "allowed": false },
+      "code_actions_on_format": {
+        "source.fixAll.biome": true,
+        "source.organizeImports.biome": true
+      }
+    },
+    "JSON": {
+      "formatter": { "language_server": { "name": "biome" } },
+      "prettier": { "allowed": false },
+      "code_actions_on_format": {
+        "source.fixAll.biome": true
+      }
+    },
+    "JSONC": {
+      "formatter": { "language_server": { "name": "biome" } },
+      "prettier": { "allowed": false },
+      "code_actions_on_format": {
+        "source.fixAll.biome": true
+      }
+    }
+  },
+
+  "lsp": {
+    // Biome uit node_modules, dus dezelfde versie als in CI. Zonder biome.json start hij niet.
+    "biome": {
+      "binary": {
+        "path": "node_modules/.bin/biome",
+        "arguments": ["lsp-proxy"]
+      },
+      "settings": {
+        "require_config_file": true
+      }
+    },
+    // effect-tsgo is de native TypeScript-server (TS 7) met de Effect language service erin.
+    // Hij draait de tsc-build die hoort bij de typescript-versie uit package.json.
+    "typescript-ls": {
+      "binary": {
+        "path": "node_modules/.bin/effect-tsgo",
+        "arguments": ["tsc", "--lsp", "--stdio"]
+      },
+      "settings": {
+        "typescript": {
+          "preferences": {
+            "autoImportFileExcludePatterns": ["**/repos/**"]
+          }
+        }
+      }
+    }
+  },
+
+  // Vendored repos (BOO-110): niet in het projectpaneel, niet in zoeken, niet geïndexeerd.
+  "file_scan_exclusions": ["**/repos", "..."]
+}
