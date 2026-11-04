@@ -1,0 +1,16 @@
+{
+	"name": "@repo/contract",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./*": "./src/*/index.ts",
+		"./example/*": "./example/*/index.ts"
+	},
+	"dependencies": {
+		"@repo/domain": "workspace:*"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit"
+	}
+}
