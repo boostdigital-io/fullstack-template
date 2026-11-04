@@ -122,7 +122,18 @@
       }
     },
     {
-      "includes": ["**/*.config.ts", "apps/api/src/index.ts", "apps/web/src/server.ts"],
+      "includes": ["**/*.config.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off",
+            "noProcessEnv": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/api/src/index.ts", "apps/web/src/server.ts"],
       "linter": {
         "rules": {
           "style": {
@@ -135,6 +146,9 @@
       "includes": ["scripts/**"],
       "linter": {
         "rules": {
+          "style": {
+            "noProcessEnv": "off"
+          },
           "suspicious": {
             "noConsole": "off"
           }
