@@ -2,7 +2,14 @@
 	"name": "fullstack-template",
 	"private": true,
 	"packageManager": "bun@1.4.4",
+	"workspaces": ["apps/*", "packages/*"],
+	"trustedDependencies": [],
 	"scripts": {
-		"preinstall": "bun scripts/check-bun-version.ts"
+		"preinstall": "bun scripts/check-bun-version.ts",
+		"typecheck": "bun run --filter '*' typecheck",
+		"check": "bun run typecheck"
+	},
+	"devDependencies": {
+		"typescript": "7.0.2"
 	}
 }

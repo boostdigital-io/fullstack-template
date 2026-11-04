@@ -1,0 +1,5 @@
+[install]
+# Een package kan alleen importeren wat in zijn eigen package.json staat.
+linker = "isolated"
+# Nieuwe dependencies krijgen een exacte versie, zonder ^.
+exact = true
