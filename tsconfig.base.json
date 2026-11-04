@@ -14,7 +14,11 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    // Effect-diagnostiek in de editor. Zit ingebouwd in effect-tsgo (@effect/tsgo), dat Zed als
+    // TypeScript-server draait (zie .zed/settings.json). Gewone tsc negeert deze plugin.
+    "plugins": [{ "name": "@effect/language-service" }]
   },
   // Vendored repos (BOO-110) nooit typechecken. Paden zijn relatief aan dit bestand.
   "exclude": ["repos"]
