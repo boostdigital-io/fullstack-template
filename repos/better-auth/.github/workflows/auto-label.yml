@@ -1,0 +1,37 @@
+name: Auto Label
+
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+permissions: {}
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    # Skip PRs targeting next (retargeted or direct) to avoid label explosion
+    # from the large diff between next and feature branches.
+    # Skip bot sync PRs (main→next) which touch many files but are purely devops.
+    if: >
+      github.repository_owner == 'better-auth' &&
+      github.event.pull_request.base.ref != 'next' &&
+      github.actor != 'better-release[bot]'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        if: vars.RELEASE_APP_ID != ''
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: read
+          permission-pull-requests: write
+
+      - uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13 # v7.0.0
+        with:
+          repo-token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
+          sync-labels: false
+          dot: true
