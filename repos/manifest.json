@@ -1,0 +1,30 @@
+{
+  "effect": {
+    "url": "https://github.com/Effect-TS/effect.git",
+    "package": "effect",
+    "tagPattern": "effect@{version}",
+    "tag": "effect@4.1.2",
+    "commit": "506eef143bcc1750ce58920aac1e45da7265d103"
+  },
+  "tanstack-router": {
+    "url": "https://github.com/TanStack/router.git",
+    "package": "@tanstack/react-start",
+    "tagPattern": "@tanstack/react-start@{version}",
+    "tag": "@tanstack/react-start@1.169.4",
+    "commit": "6b9fe6d29552270836c511bc9b343d73541f4424"
+  },
+  "better-auth": {
+    "url": "https://github.com/better-auth/better-auth.git",
+    "package": "better-auth",
+    "tagPattern": "v{version}",
+    "tag": "v1.7.15",
+    "commit": "e556c07ce4086b7188b430be05f09042a236110c"
+  },
+  "drizzle": {
+    "url": "https://github.com/drizzle-team/drizzle-orm.git",
+    "package": "drizzle-orm",
+    "tagPattern": "{version}",
+    "tag": "0.45.4",
+    "commit": "eab8bedbb65d5429c54e612ddbd88aa23091d398"
+  }
+}

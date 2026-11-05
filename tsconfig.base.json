@@ -16,9 +16,19 @@
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
 
-    // Effect-diagnostiek in de editor. Zit ingebouwd in effect-tsgo (@effect/tsgo), dat Zed als
-    // TypeScript-server draait (zie .zed/settings.json). Gewone tsc negeert deze plugin.
-    "plugins": [{ "name": "@effect/language-service" }]
+    // Effect-diagnostiek in de editor én in `typecheck`. Zit ingebouwd in effect-tsgo (@effect/tsgo),
+    // dat Zed als TypeScript-server draait (zie .zed/settings.json) en dat `typecheck` als
+    // `effect-tsgo tsc` aanroept. Gewone tsc negeert deze plugin.
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        // Effect-errors en -warnings laten `typecheck` (en dus CI) falen, net als Biome waar alles
+        // op `error` staat. Suggesties niet: dat zijn stijladviezen, die blijven zichtbaar in de editor.
+        "ignoreEffectErrorsInTscExitCode": false,
+        "ignoreEffectWarningsInTscExitCode": false,
+        "ignoreEffectSuggestionsInTscExitCode": true
+      }
+    ]
   },
   // Vendored repos (BOO-110) nooit typechecken. Paden zijn relatief aan dit bestand.
   "exclude": ["repos"]

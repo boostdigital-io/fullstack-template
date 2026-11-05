@@ -1,0 +1,4 @@
+# Vendored repos (BOO-110): telt niet mee in de GitHub-taalstatistieken en wordt in diffs en PR's ingeklapt.
+repos/** linguist-vendored linguist-generated -diff
+# Het manifest is van ons en moet in een PR wel te reviewen zijn.
+repos/manifest.json -linguist-vendored -linguist-generated diff
