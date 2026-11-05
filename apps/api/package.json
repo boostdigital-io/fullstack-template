@@ -7,6 +7,6 @@
     "@repo/domain": "workspace:*"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "effect-tsgo tsc --noEmit"
   }
 }

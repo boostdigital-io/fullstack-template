@@ -6,6 +6,6 @@
     "@repo/contract": "workspace:*"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "effect-tsgo tsc --noEmit"
   }
 }
