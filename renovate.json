@@ -6,6 +6,17 @@
   "minimumReleaseAge": "3 days",
   "rangeStrategy": "pin",
   "platformAutomerge": true,
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/test/**",
+    "**/tests/**",
+    "**/__fixtures__/**",
+    "**/repos/**"
+  ],
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["* 0-5 1 * *"]
