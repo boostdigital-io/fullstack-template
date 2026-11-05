@@ -4,7 +4,10 @@
   "type": "module",
   "dependencies": {
     "@repo/contract": "workspace:*",
-    "@repo/domain": "workspace:*"
+    "@repo/domain": "workspace:*",
+    "better-auth": "1.7.15",
+    "drizzle-orm": "0.45.4",
+    "effect": "4.1.2"
   },
   "scripts": {
     "typecheck": "effect-tsgo tsc --noEmit"
