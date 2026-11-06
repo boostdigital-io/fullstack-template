@@ -6,7 +6,7 @@ Het contract in `packages/contract`, de handlers en de middleware in `apps/api`,
 
 Importpaden: `effect/http-api` (HttpApi, HttpApiGroup, HttpApiEndpoint, HttpApiSchema, HttpApiMiddleware, HttpApiBuilder, HttpApiClient) en `effect/http` (HttpRouter, HttpServer, HttpServerRequest, FetchHttpClient). Niet `effect/unstable/...`.
 
-> **Let op:** alles in `effect/http-api` is gemarkeerd als `@stability unstable`. De Effect-plugin in `effect-tsgo` geeft daarom bij elk gebruik een warning (`unstableApiUsage`), en onze tsconfig laat `typecheck` falen op warnings. Hoe we dat oplossen, wordt besloten voordat HttpApi in `src/` komt (BOO-117).
+Alles in `effect/http-api` en `effect/http` is gemarkeerd als `@stability unstable`: een minor-versie kan breken. Daarom staan alleen deze twee in `allowedUnstableApis` in `tsconfig.base.json`; elke andere unstable API geeft een warning en laat `typecheck` falen.
 
 ## Hoe het hoort
 
@@ -52,9 +52,10 @@ export class Api extends HttpApi.make("api").add(TodosGroup) {}
 
 ### Middleware die een Effect service levert
 
-De definitie staat in het contract, omdat de groep ernaar verwijst. `provides` is de Effect service die de middleware aan de handlers geeft; `error` de fout die hij kan geven.
+De definitie staat in het contract, omdat de groep ernaar verwijst. `provides` is de Effect service die de middleware aan de handlers geeft; `error` de fout die hij kan geven. Omdat de definitie `CurrentUser` noemt, staat ook `CurrentUser` in het contract: `packages/contract/src/shared/`, naast `authErrors.ts`. Het is een port zonder serverimports, dus web en mobile kunnen het contract nog steeds importeren.
 
 ```ts
+// packages/contract/src/shared/currentUser.ts, authErrors.ts en authentication.ts
 import { Context, Schema } from "effect";
 import { HttpApiMiddleware, HttpApiSchema } from "effect/http-api";
 
@@ -71,8 +72,6 @@ export class Authentication extends HttpApiMiddleware.Service<
   error: Unauthorized.pipe(HttpApiSchema.status(401)),
 }) {}
 ```
-
-Omdat het contract `CurrentUser` noemt, moet `CurrentUser` importeerbaar zijn vanuit `packages/contract` (contract of domain). Waar hij precies komt, wordt beslist in BOO-118 en BOO-125.
 
 De implementatie staat in de API. De middleware kan het request lezen via `HttpServerRequest.HttpServerRequest` en levert `CurrentUser` met `Effect.provideService`:
 
@@ -114,34 +113,53 @@ Een fout die het endpoint niet declareert, compileert niet ("Missing errors Todo
 
 ### De HttpApi als handler op Workers
 
-`HttpRouter.toWebHandler` maakt van de API een functie `(Request, context) => Promise<Response>`. Bouw hem één keer op module-niveau; de broncode waarschuwt dat de Layer-opbouw op Workers geen I/O per request mag doen.
+`HttpRouter.toWebHandler` maakt van de API een functie `(Request) => Promise<Response>`. Bouw hem één keer op module-niveau; de broncode waarschuwt dat de Layer-opbouw op Workers geen I/O per request mag doen.
+
+Wat een handler via een service opvraagt (hier `TodoRepository` en `IdGenerator`), is een requirement **per request**, geen requirement van de Layer. `Layer.provide` op de handlers-Layer levert alleen wat de Layer zelf bij het opbouwen nodig heeft (zoals de middleware); een port lever je op een van deze twee manieren:
+
+- **Eén keer, voor alle requests**: `HttpRouter.provideRequest(layer)`. Alleen voor adapters zonder I/O-object, zoals `IdGenerator`.
+- **Per request**: een `HttpRouter.middleware` die de Layer opbouwt met `Layer.build`. Die draait in de scope van het request, dus de Layer wordt per request gemaakt en na de response opgeruimd. Hier horen `Database` en elke adapter die erop bouwt.
+
+De composition root (`layers.ts`) levert beide:
+
+```ts
+// apps/api/src/layers.ts
+import { Effect, Layer } from "effect";
+import { HttpRouter } from "effect/http";
+
+const PerRequestLayer = TodoRepositoryDrizzle.pipe(Layer.provide(DatabaseLive));
+
+export const RequestServices = HttpRouter.middleware<{ provides: TodoRepository }>()((httpEffect) =>
+  Effect.gen(function* () {
+    const services = yield* Layer.build(PerRequestLayer);
+    return yield* Effect.provideContext(httpEffect, services);
+  }),
+).layer;
+
+export const AppServices = HttpRouter.provideRequest(IdGeneratorLive);
+```
 
 ```ts
 // apps/api/src/index.ts
-import { Context, Layer } from "effect";
+import { Layer } from "effect";
 import { HttpRouter, HttpServer } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
 
 const ApiLive = HttpApiBuilder.layer(Api).pipe(
   Layer.provide(TodosHandlers.pipe(Layer.provide(AuthenticationLive))),
-  HttpRouter.provideRequest(IdGeneratorLive),
+  Layer.provide(RequestServices),
+  AppServices,
   Layer.provide(HttpServer.layerServices),
 );
 
 const { handler } = HttpRouter.toWebHandler(ApiLive);
 
 export default {
-  fetch: (request: Request) =>
-    handler(request, Context.make(TodoRepository, todoRepositoryFor(request))),
+  fetch: (request: Request) => handler(request),
 };
 ```
 
-Wat een handler via een service opvraagt (hier `TodoRepository` en `IdGenerator`), is een requirement **per request**, geen requirement van de Layer. Daarom:
-
-- `Layer.provide` op de handlers-Layer levert alleen wat de Layer zelf bij het opbouwen nodig heeft (zoals de middleware). Een port die services gebruiken, los je er niet mee op.
-- `HttpRouter.provideRequest(layer)` bouwt een Layer één keer en geeft hem aan elk request. Alleen voor adapters zonder I/O-object, zoals `IdGenerator`.
-- Wat overblijft, eist `handler` als tweede argument: een `Context`, per request opgebouwd. Zo komt de database per request binnen, zonder globale I/O-objecten. Vergeet je een port, dan compileert de `fetch` niet.
-- Hoe die `Context` uit de adapters en `Database` wordt opgebouwd (in `layers.ts`), legt BOO-117 vast.
+Vergeet je een port, dan eist `handler` hem als tweede argument (een `Context`), en compileert `handler(request)` niet. Zo valt een ontbrekende adapter op tijdens de typecheck.
 
 ### De getypte client
 
@@ -168,7 +186,7 @@ Het resultaat is `Effect<Todo, TodoNotFound | Unauthorized | …>`: de fouten ui
 - Geen serverimports in het contract. Het contract wordt ook door web en mobile geïmporteerd.
 - Geen domeinfout in de handler vertalen naar een andere fout of statuscode.
 - Geen `HttpApiBuilder.layer(...)` of `toWebHandler` binnen `fetch`. Eén keer, op module-niveau.
-- Geen database-client of andere I/O in een Layer die op module-niveau wordt gebouwd.
+- Geen database-client of andere I/O in een Layer die op module-niveau wordt gebouwd, en dus ook niet in `provideRequest`. Die horen in `RequestServices`.
 - Geen `fetch` naar de eigen API buiten de getypte client.
 
 ## Meer in `repos/effect`
@@ -177,7 +195,7 @@ Het resultaat is `Effect<Todo, TodoNotFound | Unauthorized | …>`: de fouten ui
 - `ai-docs/src/51_http-server/fixtures/api/`: groep, endpoints, fouten en een middleware met `provides`.
 - `ai-docs/src/51_http-server/fixtures/server/`: handlers en de middleware-implementatie.
 - `ai-docs/src/51_http-server/20_testing.ts`: de API testen.
-- `packages/effect/src/http/HttpRouter.ts`: `toWebHandler`, met de Workers-waarschuwing (zoek op `Cloudflare Workers`).
+- `packages/effect/src/http/HttpRouter.ts`: `toWebHandler`, met de Workers-waarschuwing (zoek op `Cloudflare Workers`), `provideRequest` en `middleware`.
 - `packages/effect/src/http-api/HttpApiSchema.ts`: `status`.
 - `packages/effect/src/http-api/HttpApiMiddleware.ts`: `Service`, `HttpRouter.Provided` voor wat middleware kan lezen.
 - `packages/effect/test/httpapi/`: tests voor builder, client, endpoints en fouten.

@@ -13,10 +13,10 @@ apps/api/
 ├── src/
 │   ├── auth/            auth.ts, authTable.ts (gegenereerd), authenticationMiddleware.ts   (BOO-124, BOO-125)
 │   ├── db/              database.ts (Drizzle via Hyperdrive, per request), migrations/      (BOO-116, BOO-117)
-│   ├── shared/          gedeelde ports: currentUser.ts, idGenerator.ts, emailSender.ts      (BOO-118)
+│   ├── shared/          gedeelde ports: idGenerator.ts, emailSender.ts                      (BOO-118)
 │   ├── config/          appConfig.ts                                                       (BOO-117)
 │   ├── testing/         testLayer.ts: .memory-adapters, vaste gebruiker en ID's            (BOO-118)
-│   ├── layers.ts        composition root                                                   (BOO-117)
+│   ├── layers.ts        composition root: AppServices, RequestServices (per request)       (BOO-117)
 │   └── index.ts         Worker-entry
 └── example/todos/       services/, repositories/, todoTable.ts, todosHandlers.ts           (BOO-123)
 
@@ -36,7 +36,8 @@ packages/domain/
 └── example/todos/       todo.ts, todoErrors.ts, todoRules.ts, index.ts                     (BOO-121)
 
 packages/contract/
-├── src/                 api.ts (HttpApi), shared/authErrors.ts, index.ts                   (BOO-117, BOO-125)
+├── src/                 api.ts (HttpApi), index.ts                                         (BOO-117)
+│   └── shared/          currentUser.ts, authentication.ts, authErrors.ts                   (BOO-125)
 └── example/todos/       todosGroup.ts, index.ts                                            (BOO-122)
 ```
 
@@ -48,28 +49,29 @@ In de root: `docs/`, `repos/` (vendored, alleen-lezen, [ADR 0012](../decisions/0
 
 Biome dwingt dit af met `useFilenamingConvention` (camelCase, PascalCase of de naam van de export). Uitgezonderd: vaste bestandsnamen (`README.md`, `CLAUDE.md`, `package.json`), gegenereerde code in `components/ui/`, en de routesyntax van TanStack.
 
-| Soort                        | Bestand                                      | Export                                       |
-| ---------------------------- | -------------------------------------------- | -------------------------------------------- |
-| Entity + value objects       | `todo.ts`                                    | `Todo`, `TodoId`, `TodoTitle`                |
-| Domeinfouten                 | `todoErrors.ts`                              | `TodoNotFound`, `TodoTitleTaken`             |
-| Domeinregels                 | `todoRules.ts`                               | pure functies, bijv. `isOwner`               |
-| Service                      | `services/createTodo.ts`                     | `createTodo`                                 |
-| Port                         | `repositories/todoRepository.ts`             | `TodoRepository`                             |
-| Adapter                      | `repositories/todoRepository.drizzle.ts`     | `TodoRepositoryDrizzle`                      |
-| Adapter voor tests           | `repositories/todoRepository.memory.ts`      | `TodoRepositoryMemory`                       |
-| Databasetabel                | `todoTable.ts`                               | Drizzle-tabel                                |
-| Endpoints (contract)         | `todosGroup.ts`                              | HttpApi-groep, met domeinfouten + statuscode |
-| Niet-domeinfouten (contract) | `shared/authErrors.ts`                       | `Unauthorized`                               |
-| Handlers                     | `todosHandlers.ts`                           | handlers voor de groep                       |
-| Middleware                   | `authenticationMiddleware.ts`                |                                              |
-| Gebruikersmeldingen (web)    | `features/todos/messages.ts`                 | `todoMessages`                               |
-| Gedeelde test-opzet          | `testing/testLayer.ts`                       | `TestLayer`                                  |
-| Unit-test                    | `createTodo.test.ts`                         |                                              |
-| Integratietest               | `todoRepository.drizzle.integration.test.ts` |                                              |
-| API-test                     | `todosHandlers.api.test.ts`                  |                                              |
-| End-to-end-test              | `e2e/todos.e2e.ts`                           |                                              |
-| React-component              | `TodoList.tsx` (PascalCase)                  | `TodoList`                                   |
-| Overige web-code             | `queries.ts`, `apiClient.ts`                 |                                              |
+| Soort                           | Bestand                                      | Export                                       |
+| ------------------------------- | -------------------------------------------- | -------------------------------------------- |
+| Entity + value objects          | `todo.ts`                                    | `Todo`, `TodoId`, `TodoTitle`                |
+| Domeinfouten                    | `todoErrors.ts`                              | `TodoNotFound`, `TodoTitleTaken`             |
+| Domeinregels                    | `todoRules.ts`                               | pure functies, bijv. `isOwner`               |
+| Service                         | `services/createTodo.ts`                     | `createTodo`                                 |
+| Port                            | `repositories/todoRepository.ts`             | `TodoRepository`                             |
+| Adapter                         | `repositories/todoRepository.drizzle.ts`     | `TodoRepositoryDrizzle`                      |
+| Adapter voor tests              | `repositories/todoRepository.memory.ts`      | `TodoRepositoryMemory`                       |
+| Databasetabel                   | `todoTable.ts`                               | Drizzle-tabel                                |
+| Endpoints (contract)            | `todosGroup.ts`                              | HttpApi-groep, met domeinfouten + statuscode |
+| Niet-domeinfouten (contract)    | `shared/authErrors.ts`                       | `Unauthorized`                               |
+| Handlers                        | `todosHandlers.ts`                           | handlers voor de groep                       |
+| Middleware-definitie (contract) | `shared/authentication.ts`                   | `Authentication`, levert `CurrentUser`       |
+| Middleware-implementatie        | `authenticationMiddleware.ts`                | `AuthenticationLive`                         |
+| Gebruikersmeldingen (web)       | `features/todos/messages.ts`                 | `todoMessages`                               |
+| Gedeelde test-opzet             | `testing/testLayer.ts`                       | `TestLayer`                                  |
+| Unit-test                       | `createTodo.test.ts`                         |                                              |
+| Integratietest                  | `todoRepository.drizzle.integration.test.ts` |                                              |
+| API-test                        | `todosHandlers.api.test.ts`                  |                                              |
+| End-to-end-test                 | `e2e/todos.e2e.ts`                           |                                              |
+| React-component                 | `TodoList.tsx` (PascalCase)                  | `TodoList`                                   |
+| Overige web-code                | `queries.ts`, `apiClient.ts`                 |                                              |
 
 Bestandsnaam en exportnaam verschillen: in een bestandsnaam markeert een punt de variant (`todoRepository.drizzle.ts`); een exportnaam kan geen punt bevatten en plakt de variant erachter (`TodoRepositoryDrizzle`).
 
