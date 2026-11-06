@@ -162,6 +162,8 @@ export default {
 
 Vergeet je een port, dan eist `handler` hem als tweede argument (een `Context`), en compileert `handler(request)` niet. Zo valt een ontbrekende adapter op tijdens de typecheck.
 
+Dit voorbeeld laat `env` en `ctx` van de Worker weg. Hoe die de per-request-Layers bereiken (zoals de Hyperdrive-binding voor `Database`), en welke `ConfigProvider` erbij hoort, legt BOO-117 vast; daarna wordt dit voorbeeld aangepast.
+
 ### De getypte client
 
 De client wordt afgeleid uit hetzelfde `Api`. Hij heeft een `HttpClient` nodig; in de browser en op Workers is dat `FetchHttpClient.layer`.
