@@ -4,7 +4,7 @@ Status: Aanvaard (2026-11-04)
 
 ## Context
 
-We willen één contract voor server, web en later mobile, met getypte fouten tot in de client. HttpApi doet dat met Effect Schema, maar valt onder `effect/unstable`.
+We willen één contract voor server, web en later mobile, met getypte fouten tot in de client. HttpApi doet dat met Effect Schema, maar de modules (`effect/http-api` en `effect/http`) zijn gemarkeerd als `@stability unstable`.
 
 ## Besluit
 
@@ -16,3 +16,4 @@ We willen één contract voor server, web en later mobile, met getypte fouten to
 
 - Eén Schema-contract: validatie, response-vorm en foutcodes op één plek.
 - Een Effect-minor kan HttpApi breken. Die update review je dus met de hand.
+- `effect/http-api` en `effect/http` staan in `allowedUnstableApis` in `tsconfig.base.json`, zodat `effect-tsgo` er niet op faalt. Andere unstable API's laten `typecheck` wel falen.

@@ -26,7 +26,11 @@
         // op `error` staat. Suggesties niet: dat zijn stijladviezen, die blijven zichtbaar in de editor.
         "ignoreEffectErrorsInTscExitCode": false,
         "ignoreEffectWarningsInTscExitCode": false,
-        "ignoreEffectSuggestionsInTscExitCode": true
+        "ignoreEffectSuggestionsInTscExitCode": true,
+        // HttpApi en de HTTP-modules zijn in effect 4.x `@stability unstable`, maar we hebben geen
+        // alternatief (ADR 0005). Alleen deze twee zijn toegestaan; andere unstable API's blijven
+        // een warning en laten `typecheck` falen.
+        "allowedUnstableApis": ["effect/http-api", "effect/http"]
       }
     ]
   },

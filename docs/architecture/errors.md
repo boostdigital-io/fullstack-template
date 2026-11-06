@@ -2,7 +2,7 @@
 
 Verwachte fouten zijn domeinfouten en staan in het type; het contract koppelt ze aan een statuscode, zodat handlers niets vertalen ([ADR 0014](../decisions/0014-domain-errors-in-contract.md)). Onverwachte fouten zijn defects: gelogd, nooit in detail getoond.
 
-> De template is in opbouw. Nog geen van de bestanden hieronder bestaat; dit zijn de regels waar ze aan moeten voldoen. Codevoorbeelden zijn illustratief: de exacte v4-API's komen in `docs/patterns/` _(komt in BOO-114)_.
+> De template is in opbouw. Nog geen van de bestanden hieronder bestaat; dit zijn de regels waar ze aan moeten voldoen. De exacte Effect-API's staan in [effect-schema.md](../patterns/effect-schema.md) en [effect-http-api.md](../patterns/effect-http-api.md).
 
 ## Soorten fouten
 
@@ -18,10 +18,10 @@ Een resource van een andere gebruiker geeft `TodoNotFound`, niet een 403, zodat 
 
 ## Regels per laag
 
-- **Domein**: fouten zijn `Schema.TaggedErrorClass` in `todoErrors.ts`, met alleen veilige velden zoals een ID, want ze gaan naar de client. Geen teksten voor gebruikers.
+- **Domein**: fouten zijn `Schema.TaggedError` in `todoErrors.ts` (zie [effect-schema.md](../patterns/effect-schema.md#domeinfout)), met alleen veilige velden zoals een ID, want ze gaan naar de client. Geen teksten voor gebruikers.
 - **Adapters**: een port bevat alleen domeinfouten. Een driverfout met betekenis wordt een domeinfout (Postgres `23505` → bijvoorbeeld `TodoTitleTaken`); al het andere wordt een defect via `Effect.orDie`.
 - **Services**: fouten stromen door. Afvangen alleen om er echt iets mee te doen; nooit afvangen en opnieuw gooien.
-- **Contract**: elk endpoint declareert zijn domeinfouten met statuscode, bijvoorbeeld `addError(TodoNotFound, { status: 404 })` (illustratief). Fouten die niet uit het domein komen, zoals `Unauthorized`, staan in `contract/src/shared/authErrors.ts` _(komt in BOO-125)_.
+- **Contract**: elk endpoint declareert zijn domeinfouten met statuscode, bijvoorbeeld `error: TodoNotFound.pipe(HttpApiSchema.status(404))` (zie [effect-http-api.md](../patterns/effect-http-api.md#endpoints-en-fouten)). Fouten die niet uit het domein komen, zoals `Unauthorized`, staan in `contract/src/shared/authErrors.ts` _(komt in BOO-125)_.
 - **Handlers**: geven fouten ongewijzigd door. Een fout die het endpoint niet declareert, compileert niet.
 - **Defects**: HttpApi maakt er een 500 van met een algemene body: geen foutmelding, geen stacktrace, geen interne namen. De volledige fout wordt één keer gelogd, met de trace-ID, en die ID gaat als response-header mee _(komt in BOO-119)_.
 - Verwachte fouten (domeinfouten, validatie, 401) worden niet als Error gelogd.

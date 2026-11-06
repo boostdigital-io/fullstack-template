@@ -10,7 +10,7 @@ Dependency-updates met de hand bijhouden kost veel reviewwerk. Breaking changes 
 
 - Renovate, wekelijks op maandagochtend (Europe/Amsterdam), met een minimum release age van drie dagen. Versies blijven exact vastgepind.
 - Minor- en patch-updates mergen automatisch bij groene CI. Majors nooit.
-- Uitzondering: voor Effect (`effect`, `@effect/*`) en `typescript` alleen patches. Ook een minor kan breken in `effect/unstable`.
+- Uitzondering: voor Effect (`effect`, `@effect/*`) en `typescript` alleen patches. Ook een minor kan breken in de unstable modules, zoals `effect/http-api`.
 - Groepen: alle Effect-packages plus `typescript` samen, alle TanStack-packages samen.
 - GitHub Actions worden ook bijgewerkt, gepind op digest.
 

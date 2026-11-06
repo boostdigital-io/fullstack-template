@@ -53,7 +53,7 @@ Van buiten naar binnen:
 2. **Service** (`services/createTodo.ts`) is één handeling van een gebruiker. Hij vraagt ports op, zoals `TodoRepository` en `CurrentUser`, en controleert domeinregels.
 3. **Port** (`repositories/todoRepository.ts`) is een Effect service die beschrijft wat de service nodig heeft, zonder implementatie.
 4. **Adapter** (`repositories/todoRepository.drizzle.ts`) implementeert de port als Layer. Voor tests is er een `.memory`-adapter.
-5. **Composition root** (`src/layers.ts`) koppelt elke port aan een adapter. Het is de enige plek die dat doet _(komt in BOO-117)_.
+5. **Composition root** (`src/layers.ts`) koppelt elke port aan een adapter. Het is de enige plek die dat doet _(komt in BOO-117)_. Adapters zonder I/O-object (zoals `IdGenerator`) worden één keer gebouwd, in `AppServices`; `Database` en de adapters die erop bouwen per request, in `RequestServices`. `CurrentUser` is de uitzondering: die levert `authenticationMiddleware` per request. Zie [effect-http-api.md](../patterns/effect-http-api.md#de-httpapi-als-handler-op-workers).
 
 Fouten lopen ongewijzigd terug: het contract koppelt domeinfouten aan statuscodes (`TodoNotFound` → 404) en de handler vertaalt niets. Zie [errors.md](errors.md).
 
@@ -78,7 +78,7 @@ Geen van deze bestanden bestaat al. Het voorbeeld wordt opgebouwd in BOO-121 (do
 - Web en API draaien elk als eigen Worker, in productie en lokaal in workerd ([ADR 0002](../decisions/0002-cloudflare-workers.md)). Bun draait alleen tooling en scripts.
 - Geen `Bun.*`-API's in code die op Workers draait.
 - Web praat met de API via een service binding; de browser en Expo via de URL van de API ([ADR 0018](../decisions/0018-api-subdomain.md)).
-- Postgres via Hyperdrive, met postgres.js. De database-Layer wordt per request opgebouwd, nooit globaal: een I/O-object mag op Workers niet over requests heen leven _(komt in BOO-117)_.
+- Postgres via Hyperdrive, met postgres.js. De database-Layer wordt per request opgebouwd in `RequestServices`, nooit globaal: een I/O-object mag op Workers niet over requests heen leven _(komt in BOO-117)_.
 - Config komt uit het `env`-object van de Worker en wordt gelezen met Effect `Config` _(komt in BOO-117)_.
 - Migraties draaien met `drizzle-kit` via Bun, lokaal of in CI, nooit in de Worker _(komt in BOO-116)_.
 
