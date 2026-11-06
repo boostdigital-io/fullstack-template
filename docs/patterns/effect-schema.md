@@ -33,12 +33,15 @@ Een entity is een `Schema.Class`. Het type is de class zelf.
 ```ts
 export class Todo extends Schema.Class<Todo>("Todo")({
   id: TodoId,
+  ownerId: UserId,
   title: TodoTitle,
   completed: Schema.Boolean,
 }) {}
 
-const todo = new Todo({ id, title, completed: false });
+const todo = new Todo({ id, ownerId, title, completed: false });
 ```
+
+`UserId` is een value object uit `@repo/domain/shared` _(komt in BOO-118)_.
 
 De constructor valideert de velden. Het type van de velden is het gebrande type, dus `new Todo({ id: "abc", … })` met een kale string compileert niet.
 
@@ -50,6 +53,8 @@ Een domeinfout is een `Schema.TaggedError`. `_tag` wordt automatisch gevuld met 
 export class TodoNotFound extends Schema.TaggedError<TodoNotFound>()("TodoNotFound", {
   id: TodoId,
 }) {}
+
+export class TodoTitleTaken extends Schema.TaggedError<TodoTitleTaken>()("TodoTitleTaken", {}) {}
 ```
 
 - Alleen veilige velden, zoals een ID: de fout gaat naar de client.

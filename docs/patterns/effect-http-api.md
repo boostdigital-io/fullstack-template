@@ -18,7 +18,7 @@ Een groep is een class die `HttpApiGroup.make` uitbreidt. Een domeinfout krijgt 
 // packages/contract/example/todos/todosGroup.ts
 import { Schema } from "effect";
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/http-api";
-import { Todo, TodoId, TodoNotFound, TodoTitle } from "@repo/domain/example/todos";
+import { Todo, TodoId, TodoNotFound, TodoTitle, TodoTitleTaken } from "@repo/domain/example/todos";
 
 export class TodosGroup extends HttpApiGroup.make("todos")
   .add(
@@ -30,6 +30,7 @@ export class TodosGroup extends HttpApiGroup.make("todos")
     HttpApiEndpoint.post("createTodo", "/", {
       payload: Schema.Struct({ title: TodoTitle }),
       success: Todo,
+      error: TodoTitleTaken.pipe(HttpApiSchema.status(409)),
     }),
   )
   .middleware(Authentication)
@@ -38,7 +39,8 @@ export class TodosGroup extends HttpApiGroup.make("todos")
 
 - `params`, `query` en `payload` valideren de input; `success` bepaalt welke velden eruit gaan.
 - `params` en `query` zijn een object met velden. `payload` bij een POST is een schema (`Schema.Struct`); bij een GET gaat `payload` via de query string.
-- Meerdere fouten: `error: [TodoNotFound.pipe(HttpApiSchema.status(404)), TodoTitleTaken.pipe(HttpApiSchema.status(409))]`.
+- Meerdere fouten in een lijst: `error: [TodoNotFound.pipe(HttpApiSchema.status(404)), TodoTitleTaken.pipe(HttpApiSchema.status(409))]`.
+- Ongeldige input (bijvoorbeeld een lege titel) geeft een 400 zonder dat je iets declareert.
 - `.middleware(...)` op de groep geldt voor alle endpoints erin.
 
 De API zelf voegt de groepen samen:
@@ -73,26 +75,9 @@ export class Authentication extends HttpApiMiddleware.Service<
 }) {}
 ```
 
-De implementatie staat in de API. De middleware kan het request lezen via `HttpServerRequest.HttpServerRequest` en levert `CurrentUser` met `Effect.provideService`:
+De implementatie staat in de API, als Layer met `Authentication.of(...)`. Hij krijgt het endpoint-effect (`httpEffect`), kan het request lezen via `HttpServerRequest.HttpServerRequest`, en levert `CurrentUser` met `Effect.provideService(httpEffect, CurrentUser, …)`, of faalt met `Unauthorized`.
 
-```ts
-// apps/api/src/auth/authenticationMiddleware.ts
-import { Effect, Layer } from "effect";
-import { HttpServerRequest } from "effect/http";
-
-export const AuthenticationMiddleware = Layer.succeed(Authentication)(
-  Authentication.of((httpEffect) =>
-    Effect.gen(function* () {
-      const request = yield* HttpServerRequest.HttpServerRequest;
-      const userId = yield* sessionUserId(request); // via Better Auth, BOO-125
-      if (userId === undefined) {
-        return yield* new Unauthorized();
-      }
-      return yield* Effect.provideService(httpEffect, CurrentUser, { id: userId });
-    }),
-  ),
-);
-```
+Belangrijk: de implementatie kan getypeerd alleen opvragen wat de definitie in `requires` noemt, plus het request. Wat `requires` noemt, wordt bij het opbouwen op module-niveau geleverd, niet per request. Een service per request (zoals `Auth`) leest hij daarom met `Effect.serviceOption`. Het volledige voorbeeld met Better Auth staat in [better-auth.md](better-auth.md#de-sessie-in-de-middleware).
 
 ### Handlers
 
@@ -115,10 +100,10 @@ Een fout die het endpoint niet declareert, compileert niet ("Missing errors Todo
 
 `HttpRouter.toWebHandler` maakt van de API een functie `(Request) => Promise<Response>`. Bouw hem één keer op module-niveau; de broncode waarschuwt dat de Layer-opbouw op Workers geen I/O per request mag doen.
 
-Wat een handler via een service opvraagt (hier `TodoRepository` en `IdGenerator`), is een requirement **per request**, geen requirement van de Layer. `Layer.provide` op de handlers-Layer levert alleen wat de Layer zelf bij het opbouwen nodig heeft (zoals de middleware); een port lever je op een van deze twee manieren:
+Wat een handler via een service opvraagt (hier `TodoRepository`, `IdGenerator` en `CurrentUser`), is een requirement **per request**, geen requirement van de Layer. `Layer.provide` op de handlers-Layer levert alleen wat de Layer zelf bij het opbouwen nodig heeft (zoals de middleware); `CurrentUser` levert de middleware; elke andere port lever je op een van deze twee manieren:
 
 - **Eén keer, voor alle requests**: `HttpRouter.provideRequest(layer)`. Alleen voor adapters zonder I/O-object, zoals `IdGenerator`.
-- **Per request**: een `HttpRouter.middleware` die de Layer opbouwt met `Layer.build`. Die draait in de scope van het request, dus de Layer wordt per request gemaakt en na de response opgeruimd. Hier horen `Database` en elke adapter die erop bouwt.
+- **Per request**: een `HttpRouter.middleware` die de Layer opbouwt met `Layer.build`. Die draait in de scope van het request, dus de Layer wordt per request gemaakt en na de response opgeruimd. Hier horen `Database` en alles wat erop bouwt: de adapters en `Auth` ([better-auth.md](better-auth.md)). Ze delen binnen het request één verbinding.
 
 De composition root (`layers.ts`) koppelt alles: handlers, middleware en beide soorten ports.
 
@@ -128,9 +113,11 @@ import { Effect, Layer } from "effect";
 import { HttpRouter, HttpServer } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
 
-const PerRequestLayer = TodoRepositoryDrizzle.pipe(Layer.provide(Database.layer));
+const PerRequestLayer = Layer.mergeAll(TodoRepositoryDrizzle, AuthLayer).pipe(
+  Layer.provide(Database.layer),
+);
 
-const RequestServices = HttpRouter.middleware<{ provides: TodoRepository }>()((httpEffect) =>
+const RequestServices = HttpRouter.middleware<{ provides: TodoRepository | Auth }>()((httpEffect) =>
   Effect.gen(function* () {
     const services = yield* Layer.build(PerRequestLayer);
     return yield* Effect.provideContext(httpEffect, services);
