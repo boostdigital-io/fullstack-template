@@ -13,18 +13,19 @@ Een port is een class die `Context.Service` uitbreidt. De eerste typeparameter i
 ```ts
 // repositories/todoRepository.ts
 import { Context, type Effect } from "effect";
-import type { Todo, TodoId, TodoNotFound } from "@repo/domain/example/todos";
+import type { Todo, TodoId, TodoNotFound, TodoTitleTaken } from "@repo/domain/example/todos";
+import type { UserId } from "@repo/domain/shared";
 
 export class TodoRepository extends Context.Service<
   TodoRepository,
   {
-    readonly findById: (id: TodoId) => Effect.Effect<Todo, TodoNotFound>;
-    readonly insert: (todo: Todo) => Effect.Effect<void>;
+    readonly findById: (ownerId: UserId, id: TodoId) => Effect.Effect<Todo, TodoNotFound>;
+    readonly insert: (todo: Todo) => Effect.Effect<void, TodoTitleTaken>;
   }
 >()("@repo/api/todos/TodoRepository") {}
 ```
 
-De interface bevat alleen domeintypes en domeinfouten. Het type van de implementatie is `TodoRepository["Service"]`.
+De interface bevat alleen domeintypes en domeinfouten. Zoeken gebeurt altijd met de eigenaar erbij: een todo van een ander geeft `TodoNotFound` ([ADR 0019](../decisions/0019-not-found-over-forbidden.md)). Het type van de implementatie is `TodoRepository["Service"]`.
 
 ### Adapter: een Layer
 
@@ -39,12 +40,20 @@ export const TodoRepositoryMemory = Layer.effect(
   Effect.sync(() => {
     const todos = new Map<TodoId, Todo>();
     return TodoRepository.of({
-      findById: (id) => {
+      findById: (ownerId, id) => {
         const todo = todos.get(id);
-        return todo === undefined ? Effect.fail(new TodoNotFound({ id })) : Effect.succeed(todo);
+        return todo === undefined || todo.ownerId !== ownerId
+          ? Effect.fail(new TodoNotFound({ id }))
+          : Effect.succeed(todo);
       },
       insert: (todo) =>
-        Effect.sync(() => {
+        Effect.gen(function* () {
+          const taken = [...todos.values()].some(
+            (t) => t.ownerId === todo.ownerId && t.title === todo.title,
+          );
+          if (taken) {
+            return yield* new TodoTitleTaken();
+          }
           todos.set(todo.id, todo);
         }),
     });
@@ -52,6 +61,7 @@ export const TodoRepositoryMemory = Layer.effect(
 );
 ```
 
+- De `.memory`-adapter gedraagt zich als de echte: dezelfde fouten in dezelfde gevallen (hier de unique-regel uit de tabel). De Drizzle-adapter staat in [drizzle.md](drizzle.md#adapter).
 - Heeft de adapter zelf een Effect service nodig (zoals `Database`), dan `yield*` je die in een `Effect.gen` binnen `Layer.effect`. Die requirement staat dan in het derde type van de Layer.
 - Een driverfout met betekenis wordt een domeinfout; de rest wordt een defect met `Effect.orDie` (zie [errors.md](../architecture/errors.md#regels-per-laag)).
 - Koppelen gebeurt met `Layer.provide` (verbergt de dependency) of `Layer.provideMerge` (houdt hem zichtbaar). Alleen in `layers.ts` _(komt in BOO-117)_ en in tests.
@@ -66,12 +76,13 @@ Een service is een functie, geen Effect service ([ADR 0008](../decisions/0008-se
 import { Effect } from "effect";
 
 export const getTodo = Effect.fn("getTodo")(function* (id: TodoId) {
+  const user = yield* CurrentUser;
   const todos = yield* TodoRepository;
-  return yield* todos.findById(id);
+  return yield* todos.findById(user.id, id);
 });
 ```
 
-Het type wordt afgeleid: `Effect<Todo, TodoNotFound, TodoRepository>`. Wil je het vastleggen, gebruik dan `Effect.fn.Return`. Een service die meer nodig heeft, vraagt meer ports op (`IdGenerator` _komt in BOO-118_):
+Het type wordt afgeleid: `Effect<Todo, TodoNotFound, CurrentUser | TodoRepository>`. `CurrentUser` is ook een port; in de API levert de authenticatie-middleware hem (zie [effect-http-api.md](effect-http-api.md#middleware-die-een-effect-service-levert)). Wil je het vastleggen, gebruik dan `Effect.fn.Return`. Een service die meer nodig heeft, vraagt meer ports op (`IdGenerator` _komt in BOO-118_):
 
 ```ts
 // services/createTodo.ts
@@ -79,17 +90,18 @@ import { Effect, Schema } from "effect";
 
 export const createTodo = Effect.fn("createTodo")(function* (input: {
   readonly title: TodoTitle;
-}): Effect.fn.Return<Todo, never, TodoRepository | IdGenerator> {
+}): Effect.fn.Return<Todo, TodoTitleTaken, TodoRepository | IdGenerator | CurrentUser> {
+  const user = yield* CurrentUser;
   const todos = yield* TodoRepository;
   const ids = yield* IdGenerator;
   const id = yield* Schema.decodeEffect(TodoId)(yield* ids.uuid).pipe(Effect.orDie);
-  const todo = new Todo({ id, title: input.title, completed: false });
+  const todo = new Todo({ id, ownerId: user.id, title: input.title, completed: false });
   yield* todos.insert(todo);
   return todo;
 });
 ```
 
-Een ongeldige ID uit de generator is een bug, dus een defect (`Effect.orDie`), geen domeinfout.
+Een ongeldige ID uit de generator is een bug, dus een defect (`Effect.orDie`), geen domeinfout. `TodoTitleTaken` uit de repository stroomt ongewijzigd door.
 
 Extra gedrag (zoals `Effect.catchTag`) geef je als extra argumenten aan `Effect.fn` mee, niet via `.pipe` erachter.
 

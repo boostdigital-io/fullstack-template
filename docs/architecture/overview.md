@@ -78,7 +78,7 @@ Geen van deze bestanden bestaat al. Het voorbeeld wordt opgebouwd in BOO-121 (do
 - Web en API draaien elk als eigen Worker, in productie en lokaal in workerd ([ADR 0002](../decisions/0002-cloudflare-workers.md)). Bun draait alleen tooling en scripts.
 - Geen `Bun.*`-API's in code die op Workers draait.
 - Web praat met de API via een service binding; de browser en Expo via de URL van de API ([ADR 0018](../decisions/0018-api-subdomain.md)).
-- Postgres via Hyperdrive, met postgres.js. De database-Layer wordt per request opgebouwd in `RequestServices`, nooit globaal: een I/O-object mag op Workers niet over requests heen leven _(komt in BOO-117)_.
+- Postgres via Hyperdrive, met postgres.js. De database-Layer wordt per request opgebouwd in `RequestServices` (zie [drizzle.md](../patterns/drizzle.md)), nooit globaal: een I/O-object mag op Workers niet over requests heen leven _(komt in BOO-117)_.
 - Config komt uit het `env`-object van de Worker en wordt gelezen met Effect `Config` _(komt in BOO-117)_.
 - Migraties draaien met `drizzle-kit` via Bun, lokaal of in CI, nooit in de Worker _(komt in BOO-116)_.
 

@@ -23,9 +23,9 @@ Zie [ADR 0018](../decisions/0018-api-subdomain.md). Alles hieronder komt in BOO-
 
 ## Authenticatie
 
-- Sessies via Better Auth, in de database, met cookies die `HttpOnly`, `Secure` en `SameSite=Lax` zijn, gezet op het hoofddomein (cross-subdomain) _(komt in BOO-124)_.
+- Sessies via Better Auth, in de database, met cookies die `HttpOnly`, `Secure` en `SameSite=Lax` zijn, gezet op het hoofddomein (cross-subdomain) _(komt in BOO-124)_. Better Auth draait met een instantie per request, op de database van dat request (zie [better-auth.md](../patterns/better-auth.md)).
 - E-mailverificatie staat standaard uit en is per project aan te zetten ([ADR 0020](../decisions/0020-optional-email-verification.md)). De port `EmailSender` is er wel, voor wachtwoordreset _(komt in BOO-118)_.
-- Rate limiting op auth-endpoints via de limiter van Better Auth, met opslag in de database: geheugenopslag werkt niet op Workers. Per project eventueel aangevuld met Cloudflare-regels.
+- Rate limiting op auth-endpoints via de limiter van Better Auth, met opslag in de database: geheugenopslag werkt niet op Workers. Zet hem expliciet aan (`enabled: true`): standaard staat hij alleen aan bij `NODE_ENV=production`, en dat is op Workers meestal niet gezet. Per project eventueel aangevuld met Cloudflare-regels.
 - CSRF: naast `SameSite=Lax` controleert een `originCheck`-middleware bij elke POST, PUT, PATCH en DELETE de `Origin`-header _(komt in BOO-125)_. Nodig omdat zuster-subdomeinen voor `SameSite` als dezelfde site tellen.
 
 ## Autorisatie
@@ -38,7 +38,7 @@ Zie [ADR 0018](../decisions/0018-api-subdomain.md). Alles hieronder komt in BOO-
 ## Input en database
 
 - Elke string in het contract heeft een maximale lengte, elke lijst een maximum aantal items, en paginering een bovengrens.
-- Geen SQL met string-interpolatie. Ruwe SQL alleen via de `sql`-template van Drizzle.
+- Geen SQL met string-interpolatie. Ruwe SQL alleen via de `sql`-template van Drizzle (zie [drizzle.md](../patterns/drizzle.md#ruwe-sql)).
 
 ## Headers
 

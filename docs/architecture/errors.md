@@ -19,7 +19,7 @@ Een resource van een andere gebruiker geeft `TodoNotFound`, niet een 403, zodat 
 ## Regels per laag
 
 - **Domein**: fouten zijn `Schema.TaggedError` in `todoErrors.ts` (zie [effect-schema.md](../patterns/effect-schema.md#domeinfout)), met alleen veilige velden zoals een ID, want ze gaan naar de client. Geen teksten voor gebruikers.
-- **Adapters**: een port bevat alleen domeinfouten. Een driverfout met betekenis wordt een domeinfout (Postgres `23505` → bijvoorbeeld `TodoTitleTaken`); al het andere wordt een defect via `Effect.orDie`.
+- **Adapters**: een port bevat alleen domeinfouten. Een driverfout met betekenis wordt een domeinfout (Postgres `23505` → bijvoorbeeld `TodoTitleTaken`); al het andere wordt een defect via `Effect.orDie` (zie [drizzle.md](../patterns/drizzle.md#adapter)).
 - **Services**: fouten stromen door. Afvangen alleen om er echt iets mee te doen; nooit afvangen en opnieuw gooien.
 - **Contract**: elk endpoint declareert zijn domeinfouten met statuscode, bijvoorbeeld `error: TodoNotFound.pipe(HttpApiSchema.status(404))` (zie [effect-http-api.md](../patterns/effect-http-api.md#endpoints-en-fouten)). Fouten die niet uit het domein komen, zoals `Unauthorized`, staan in `contract/src/shared/authErrors.ts` _(komt in BOO-125)_.
 - **Handlers**: geven fouten ongewijzigd door. Een fout die het endpoint niet declareert, compileert niet.
