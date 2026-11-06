@@ -53,7 +53,7 @@ Van buiten naar binnen:
 2. **Service** (`services/createTodo.ts`) is één handeling van een gebruiker. Hij vraagt ports op, zoals `TodoRepository` en `CurrentUser`, en controleert domeinregels.
 3. **Port** (`repositories/todoRepository.ts`) is een Effect service die beschrijft wat de service nodig heeft, zonder implementatie.
 4. **Adapter** (`repositories/todoRepository.drizzle.ts`) implementeert de port als Layer. Voor tests is er een `.memory`-adapter.
-5. **Composition root** (`src/layers.ts`) koppelt elke port aan een adapter. Het is de enige plek die dat doet _(komt in BOO-117)_. Adapters zonder I/O-object (zoals `IdGenerator`) worden één keer gebouwd, in `AppServices`; `Database` en de adapters die erop bouwen per request, in `RequestServices`. Zie [effect-http-api.md](../patterns/effect-http-api.md#de-httpapi-als-handler-op-workers).
+5. **Composition root** (`src/layers.ts`) koppelt elke port aan een adapter. Het is de enige plek die dat doet _(komt in BOO-117)_. Adapters zonder I/O-object (zoals `IdGenerator`) worden één keer gebouwd, in `AppServices`; `Database` en de adapters die erop bouwen per request, in `RequestServices`. `CurrentUser` is de uitzondering: die levert `authenticationMiddleware` per request. Zie [effect-http-api.md](../patterns/effect-http-api.md#de-httpapi-als-handler-op-workers).
 
 Fouten lopen ongewijzigd terug: het contract koppelt domeinfouten aan statuscodes (`TodoNotFound` → 404) en de handler vertaalt niets. Zie [errors.md](errors.md).
 

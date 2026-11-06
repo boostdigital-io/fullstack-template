@@ -16,8 +16,8 @@ apps/api/
 │   ├── shared/          gedeelde ports: idGenerator.ts, emailSender.ts                      (BOO-118)
 │   ├── config/          appConfig.ts                                                       (BOO-117)
 │   ├── testing/         testLayer.ts: .memory-adapters, vaste gebruiker en ID's            (BOO-118)
-│   ├── layers.ts        composition root: AppServices, RequestServices (per request)       (BOO-117)
-│   └── index.ts         Worker-entry
+│   ├── layers.ts        composition root: ApiLayer, met AppServices en RequestServices      (BOO-117)
+│   └── index.ts         Worker-entry: alleen toWebHandler en fetch
 └── example/todos/       services/, repositories/, todoTable.ts, todosHandlers.ts           (BOO-123)
 
 apps/web/
@@ -63,7 +63,7 @@ Biome dwingt dit af met `useFilenamingConvention` (camelCase, PascalCase of de n
 | Niet-domeinfouten (contract)    | `shared/authErrors.ts`                       | `Unauthorized`                               |
 | Handlers                        | `todosHandlers.ts`                           | handlers voor de groep                       |
 | Middleware-definitie (contract) | `shared/authentication.ts`                   | `Authentication`, levert `CurrentUser`       |
-| Middleware-implementatie        | `authenticationMiddleware.ts`                | `AuthenticationLive`                         |
+| Middleware-implementatie        | `authenticationMiddleware.ts`                | `AuthenticationMiddleware`                   |
 | Gebruikersmeldingen (web)       | `features/todos/messages.ts`                 | `todoMessages`                               |
 | Gedeelde test-opzet             | `testing/testLayer.ts`                       | `TestLayer`                                  |
 | Unit-test                       | `createTodo.test.ts`                         |                                              |
@@ -106,18 +106,18 @@ Docs zijn kebab-case. ADR's zijn genummerd: `0001-bun-workspaces.md`.
 
 Elk begrip heeft precies één betekenis, in code, docs, issues en gesprekken. Bedoelen we het Effect-mechanisme (`Context` + `Layer`), dan zeggen we altijd voluit **Effect service**; een kale "service" is altijd een bestand in `services/`.
 
-| Begrip                    | Betekenis                                                                          | Voorbeeld                                                     |
-| ------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| Service                   | Eén handeling van een gebruiker: een functie in `services/` die ports opvraagt     | `createTodo`                                                  |
-| Effect service            | Het Effect-mechanisme: gedefinieerd via `Context`, geleverd via een `Layer`        | `TodoRepository`, `Database`                                  |
-| Port                      | Effect service die een service opvraagt                                            | `TodoRepository`, `CurrentUser`, `IdGenerator`, `EmailSender` |
-| Adapter                   | Layer die een port implementeert                                                   | `TodoRepositoryDrizzle`, `TodoRepositoryMemory`               |
-| Infrastructuur-dependency | Effect service die alleen adapters gebruiken                                       | `Database`                                                    |
-| Entity                    | Domeinobject met identiteit                                                        | `Todo`                                                        |
-| Value object              | Klein type met eigen regels, gebrand                                               | `TodoId`, `TodoTitle`                                         |
-| Domeinfout                | Verwachte fout in domeintermen, zonder HTTP; het contract geeft hem een statuscode | `TodoNotFound`                                                |
-| Defect                    | Onverwachte fout die niet in het type staat: gelogd, als 500 met referentie-ID     | database onbereikbaar                                         |
-| Contract                  | De HttpApi-definitie die api, web en mobile delen                                  | `@repo/contract`                                              |
-| Composition root          | De enige plek die ports aan adapters koppelt                                       | `apps/api/src/layers.ts`                                      |
+| Begrip                    | Betekenis                                                                           | Voorbeeld                                                     |
+| ------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Service                   | Eén handeling van een gebruiker: een functie in `services/` die ports opvraagt      | `createTodo`                                                  |
+| Effect service            | Het Effect-mechanisme: gedefinieerd via `Context`, geleverd via een `Layer`         | `TodoRepository`, `Database`                                  |
+| Port                      | Effect service die een service opvraagt                                             | `TodoRepository`, `CurrentUser`, `IdGenerator`, `EmailSender` |
+| Adapter                   | Layer die een port implementeert                                                    | `TodoRepositoryDrizzle`, `TodoRepositoryMemory`               |
+| Infrastructuur-dependency | Effect service die alleen adapters gebruiken                                        | `Database`                                                    |
+| Entity                    | Domeinobject met identiteit                                                         | `Todo`                                                        |
+| Value object              | Klein type met eigen regels, gebrand                                                | `TodoId`, `TodoTitle`                                         |
+| Domeinfout                | Verwachte fout in domeintermen, zonder HTTP; het contract geeft hem een statuscode  | `TodoNotFound`                                                |
+| Defect                    | Onverwachte fout die niet in het type staat: gelogd, als 500 met referentie-ID      | database onbereikbaar                                         |
+| Contract                  | De HttpApi-definitie die api, web en mobile delen                                   | `@repo/contract`                                              |
+| Composition root          | De enige plek die ports aan adapters koppelt (`CurrentUser` komt uit de middleware) | `apps/api/src/layers.ts`                                      |
 
 Projectspecifieke begrippen staan in [docs/project/glossary.md](../project/glossary.md).

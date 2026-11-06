@@ -52,7 +52,7 @@ export class Api extends HttpApi.make("api").add(TodosGroup) {}
 
 ### Middleware die een Effect service levert
 
-De definitie staat in het contract, omdat de groep ernaar verwijst. `provides` is de Effect service die de middleware aan de handlers geeft; `error` de fout die hij kan geven. Omdat de definitie `CurrentUser` noemt, staat ook `CurrentUser` in het contract: `packages/contract/src/shared/`, naast `authErrors.ts`. Het is een port zonder serverimports, dus web en mobile kunnen het contract nog steeds importeren.
+De definitie staat in het contract, omdat de groep ernaar verwijst. `provides` is de Effect service die de middleware aan de handlers geeft; `error` de fout die hij kan geven. Omdat de definitie `CurrentUser` noemt, staat ook `CurrentUser` in het contract: `packages/contract/src/shared/`, naast `authErrors.ts`. Het is een port zonder serverimports, dus web en mobile kunnen het contract nog steeds importeren. Anders dan andere ports heeft `CurrentUser` geen adapter in de composition root: de authenticatie-middleware levert hem per request. In tests geef je een vaste gebruiker mee met `Effect.provideService(CurrentUser, …)` of een `Layer.succeed(CurrentUser)(…)`.
 
 ```ts
 // packages/contract/src/shared/currentUser.ts, authErrors.ts en authentication.ts
@@ -80,7 +80,7 @@ De implementatie staat in de API. De middleware kan het request lezen via `HttpS
 import { Effect, Layer } from "effect";
 import { HttpServerRequest } from "effect/http";
 
-export const AuthenticationLive = Layer.succeed(Authentication)(
+export const AuthenticationMiddleware = Layer.succeed(Authentication)(
   Authentication.of((httpEffect) =>
     Effect.gen(function* () {
       const request = yield* HttpServerRequest.HttpServerRequest;
@@ -120,39 +120,40 @@ Wat een handler via een service opvraagt (hier `TodoRepository` en `IdGenerator`
 - **Eén keer, voor alle requests**: `HttpRouter.provideRequest(layer)`. Alleen voor adapters zonder I/O-object, zoals `IdGenerator`.
 - **Per request**: een `HttpRouter.middleware` die de Layer opbouwt met `Layer.build`. Die draait in de scope van het request, dus de Layer wordt per request gemaakt en na de response opgeruimd. Hier horen `Database` en elke adapter die erop bouwt.
 
-De composition root (`layers.ts`) levert beide:
+De composition root (`layers.ts`) koppelt alles: handlers, middleware en beide soorten ports.
 
 ```ts
 // apps/api/src/layers.ts
 import { Effect, Layer } from "effect";
-import { HttpRouter } from "effect/http";
+import { HttpRouter, HttpServer } from "effect/http";
+import { HttpApiBuilder } from "effect/http-api";
 
-const PerRequestLayer = TodoRepositoryDrizzle.pipe(Layer.provide(DatabaseLive));
+const PerRequestLayer = TodoRepositoryDrizzle.pipe(Layer.provide(Database.layer));
 
-export const RequestServices = HttpRouter.middleware<{ provides: TodoRepository }>()((httpEffect) =>
+const RequestServices = HttpRouter.middleware<{ provides: TodoRepository }>()((httpEffect) =>
   Effect.gen(function* () {
     const services = yield* Layer.build(PerRequestLayer);
     return yield* Effect.provideContext(httpEffect, services);
   }),
 ).layer;
 
-export const AppServices = HttpRouter.provideRequest(IdGeneratorLive);
-```
+const AppServices = HttpRouter.provideRequest(IdGeneratorUuid);
 
-```ts
-// apps/api/src/index.ts
-import { Layer } from "effect";
-import { HttpRouter, HttpServer } from "effect/http";
-import { HttpApiBuilder } from "effect/http-api";
-
-const ApiLive = HttpApiBuilder.layer(Api).pipe(
-  Layer.provide(TodosHandlers.pipe(Layer.provide(AuthenticationLive))),
+export const ApiLayer = HttpApiBuilder.layer(Api).pipe(
+  Layer.provide(TodosHandlers.pipe(Layer.provide(AuthenticationMiddleware))),
   Layer.provide(RequestServices),
   AppServices,
   Layer.provide(HttpServer.layerServices),
 );
+```
 
-const { handler } = HttpRouter.toWebHandler(ApiLive);
+De Worker-entry bouwt alleen de handler:
+
+```ts
+// apps/api/src/index.ts
+import { HttpRouter } from "effect/http";
+
+const { handler } = HttpRouter.toWebHandler(ApiLayer);
 
 export default {
   fetch: (request: Request) => handler(request),

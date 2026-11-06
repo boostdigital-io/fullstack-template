@@ -55,6 +55,7 @@ export const TodoRepositoryMemory = Layer.effect(
 - Heeft de adapter zelf een Effect service nodig (zoals `Database`), dan `yield*` je die in een `Effect.gen` binnen `Layer.effect`. Die requirement staat dan in het derde type van de Layer.
 - Een driverfout met betekenis wordt een domeinfout; de rest wordt een defect met `Effect.orDie` (zie [errors.md](../architecture/errors.md#regels-per-laag)).
 - Koppelen gebeurt met `Layer.provide` (verbergt de dependency) of `Layer.provideMerge` (houdt hem zichtbaar). Alleen in `layers.ts` _(komt in BOO-117)_ en in tests.
+- In de API is elke port een requirement per request. Welke adapters één keer en welke per request worden opgebouwd, staat in [effect-http-api.md](effect-http-api.md#de-httpapi-als-handler-op-workers).
 
 ### Service: een functie met `Effect.fn`
 
@@ -121,14 +122,12 @@ export class AppConfig extends Context.Service<
 
 ### Testen met `@effect/vitest`
 
-> `@effect/vitest` en `vitest` komen in BOO-120. De Effect-code in de tests hieronder is getypecheckt en gedraaid; de aanroepen van `describe`, `it.effect` en `assert` volgen `ai-docs/src/09_testing/` en worden in BOO-120 gecontroleerd. `IdGeneratorFixed` is een adapter die altijd dezelfde UUID geeft; hij komt in `testing/testLayer.ts` _(BOO-118)_.
+> `@effect/vitest` en `vitest` komen in BOO-120. De Effect-code in de tests hieronder is getypecheckt en gedraaid; de aanroepen van `describe`, `it.effect` en `assert` volgen `ai-docs/src/09_testing/` en worden in BOO-120 gecontroleerd. `TestLayer` komt uit `src/testing/testLayer.ts`: alle `.memory`-adapters (zoals `TodoRepositoryMemory` en `IdGeneratorMemory`, die voorspelbare ID's geeft) plus een vaste `CurrentUser` _(BOO-118, BOO-123)_.
 
 ```ts
 // services/getTodo.test.ts
 import { assert, describe, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
-
-const TestLayer = Layer.mergeAll(TodoRepositoryMemory, IdGeneratorFixed);
+import { Effect } from "effect";
 
 describe("getTodo", () => {
   it.effect("geeft de todo terug", () =>
