@@ -29,8 +29,8 @@ Een resource van een andere gebruiker geeft `TodoNotFound`, niet een 403, zodat 
 ## In de web-app
 
 - `lib/apiClient.ts` is de enige brug van Effect naar TanStack Query en behoudt de getypte fout _(komt in BOO-128)_.
-- In loaders wordt `TodoNotFound` een `notFound()`, zodat de route zijn not-found-pagina toont.
-- Formulieren valideren in de client met dezelfde contract-Schema's via TanStack Form; de server valideert opnieuw.
+- In loaders wordt `TodoNotFound` een `notFound()`, zodat de route zijn not-found-pagina toont (zie [tanstack-router.md](../patterns/tanstack-router.md#route-met-loader-en-notfound)).
+- Formulieren valideren in de client met dezelfde contract-Schema's via TanStack Form; de server valideert opnieuw (zie [tanstack-form.md](../patterns/tanstack-form.md)).
 - Onverwachte fouten komen in de `errorComponent` van de route: algemene melding, referentie-ID, opnieuw proberen _(komt in BOO-130)_.
 - Fouten van Better Auth worden alleen in de auth-formulieren afgehandeld.
 

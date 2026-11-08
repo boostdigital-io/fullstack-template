@@ -6,13 +6,13 @@ Twee apps en twee gedeelde packages. Een package bestaat alleen om code te delen
 
 ## Apps en packages
 
-| Workspace                              | Wat                                                              | Mag importeren                   | Draait op          |
-| -------------------------------------- | ---------------------------------------------------------------- | -------------------------------- | ------------------ |
-| `apps/api` (`@repo/api`)               | De API: HttpApi, services, adapters, Better Auth                 | `@repo/domain`, `@repo/contract` | Cloudflare Worker  |
-| `apps/web` (`@repo/web`)               | De web-app: TanStack Start                                       | alleen `@repo/contract`          | Cloudflare Worker  |
-| `packages/contract` (`@repo/contract`) | De HttpApi-definitie: endpoints, schema's, fouten met statuscode | `@repo/domain`                   | wordt geïmporteerd |
-| `packages/domain` (`@repo/domain`)     | Entities, value objects, domeinfouten, domeinregels              | niets (alleen `effect`)          | wordt geïmporteerd |
-| Mobile (later)                         | Expo-app                                                         | alleen `@repo/contract`          | telefoon           |
+| Workspace                              | Wat                                                              | Mag importeren                                                            | Draait op          |
+| -------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------ |
+| `apps/api` (`@repo/api`)               | De API: HttpApi, services, adapters, Better Auth                 | `@repo/domain`, `@repo/contract`                                          | Cloudflare Worker  |
+| `apps/web` (`@repo/web`)               | De web-app: TanStack Start                                       | van de workspaces alleen `@repo/contract`; libraries zoals `effect` mogen | Cloudflare Worker  |
+| `packages/contract` (`@repo/contract`) | De HttpApi-definitie: endpoints, schema's, fouten met statuscode | `@repo/domain`                                                            | wordt geïmporteerd |
+| `packages/domain` (`@repo/domain`)     | Entities, value objects, domeinfouten, domeinregels              | niets (alleen `effect`)                                                   | wordt geïmporteerd |
+| Mobile (later)                         | Expo-app                                                         | alleen `@repo/contract`                                                   | telefoon           |
 
 Pijlen van wie importeert wat:
 
@@ -63,8 +63,8 @@ De begrippen service, Effect service, port en adapter hebben elk precies één b
 
 Een gebruiker maakt een todo aan:
 
-1. `TodoForm` (web) valideert in de browser met de Schema's uit het contract.
-2. `mutations.ts` roept via TanStack Query de `apiClient` aan.
+1. `TodoForm` (web) valideert in de browser met de Schema's uit het contract ([tanstack-form.md](../patterns/tanstack-form.md)).
+2. `mutations.ts` roept via TanStack Query de `apiClient` aan ([tanstack-query.md](../patterns/tanstack-query.md)).
 3. `apiClient` gaat op de server van de web-app via de service binding naar de API, in de browser via de URL van de API.
 4. `authenticationMiddleware` zet de sessie om in `CurrentUser`, of geeft `Unauthorized` (401).
 5. `todosHandlers` krijgt gevalideerde input en roept `createTodo` aan.
