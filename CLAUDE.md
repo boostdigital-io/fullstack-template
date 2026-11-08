@@ -1,35 +1,90 @@
 # CLAUDE.md
 
-Tijdelijke versie. De volledige `CLAUDE.md` volgt in BOO-112.
-
 ## Wat dit is
 
-Een fullstack-template, nog in opbouw.
+Een fullstack-template voor nieuwe projecten: een API en een web-app, elk als Cloudflare Worker, gebouwd met Effect v4, TanStack Start, Drizzle en Better Auth. De template is nog in opbouw. Wat nog niet bestaat, staat in de docs als regel, gemarkeerd met _(komt in BOO-…)_.
 
-- Het Linear-issue van de sessie is de bron van waarheid en bepaalt de scope: doe niets daarbuiten.
-- Achtergrond, besluiten en conventies staan in het plan: https://claude.ai/artifact/ECzxwZiTRNPX9xww482Y8E
+Hoe we bouwen staat in `docs/`. Het plan (https://claude.ai/artifact/ECzxwZiTRNPX9xww482Y8E) is alleen achtergrond; bij verschil geldt `docs/`.
 
-## Stack
+## Werkwijze
 
-Bun als package manager en tooling, Cloudflare Workers als runtime, Effect v4, TanStack Start, Drizzle, Better Auth, Vitest.
+- Eén Linear-issue is één sessie, één branch en één PR. Het issue is de bron van waarheid en bepaalt de scope: doe niets daarbuiten. Vind je onderweg iets anders, meld het of stel een issue voor.
+- Starten met een issue gaat straks via de `/issue`-skill _(komt in BOO-115)_.
 
-## Wat er nu staat
+## De repo
 
-- Workspaces: `apps/api`, `apps/web`, `packages/domain`, `packages/contract`, elk met `src/` en `example/`.
-- `example/` is voor de referentie-feature: wordt niet gebouwd, en `src/` importeert er nooit uit (Biome dwingt dat af).
-- Biome voor lint en formatting, Husky voor git hooks, CI in GitHub Actions.
+| Map                 | Wat                                                           |
+| ------------------- | ------------------------------------------------------------- |
+| `apps/api`          | De API-Worker. Eigen `CLAUDE.md`.                             |
+| `apps/web`          | De web-app (TanStack Start). Eigen `CLAUDE.md`.               |
+| `packages/domain`   | Entities, value objects, domeinfouten. Eigen `CLAUDE.md`.     |
+| `packages/contract` | De HttpApi-definitie die api en web delen. Eigen `CLAUDE.md`. |
+| `docs/`             | Architectuur, besluiten, patronen en projectcontext.          |
+| `repos/`            | Broncode van libraries op onze versie. Alleen-lezen.          |
+| `scripts/`          | Tooling-scripts (draaien met Bun, niet op Workers).           |
+
+Elke workspace heeft `src/` en `example/`. `example/` bevat de referentie-feature `todos`: die wordt niet gebouwd, en `src/` importeert er nooit uit.
 
 ## Commando's
 
-- `bun run check`: lint en typecheck. Draai dit voor elke commit.
-- `bun run lint`: Biome-check.
-- `bun run format`: Biome met automatische fixes.
-- `bun run typecheck`: typecheck in alle workspaces.
+| Commando              | Wat                                                       |
+| --------------------- | --------------------------------------------------------- |
+| `bun run check`       | Lint en typecheck. Draai dit voor elke commit.            |
+| `bun run lint`        | Biome-check van de hele repo.                             |
+| `bun run format`      | Biome met automatische fixes.                             |
+| `bun run typecheck`   | Typecheck in alle workspaces (`effect-tsgo`).             |
+| `bun run repos:sync`  | Zet `repos/` op de geïnstalleerde versies.                |
+| `bun run repos:check` | Faalt als `repos/` afwijkt van de geïnstalleerde versies. |
+
+Git-hooks: pre-commit draait Biome op de gestagede bestanden, commit-msg controleert de commitboodschap, pre-push draait de typecheck. Tests en hun commando's komen in BOO-120.
 
 ## Harde regels
 
 - Geen `Bun.*`-API's in code die op Workers draait.
-- Tests komen met Vitest (BOO-120). Gebruik nooit `bun test`.
+- Gebruik nooit `bun test`. Tests draaien met Vitest _(komt in BOO-120)_.
 - Conventional Commits, met `Refs: BOO-<n>` als footer.
 - Nooit naar `main` pushen en nooit zelf mergen.
 - Geen nieuwe dependencies zonder eerst te vragen.
+
+## Waar zoeken
+
+- Applicatiecode zoek je in `apps/` en `packages/`.
+- `repos/` alleen bij een vraag over een library. Lees dan eerst het patroonbestand in `docs/patterns/`, en daarna pas de broncode in `repos/`.
+
+## Welk document voor welke vraag
+
+| Vraag                                                      | Lees                                                   |
+| ---------------------------------------------------------- | ------------------------------------------------------ |
+| Welke workspace mag wat importeren? Hoe loopt een request? | `docs/architecture/overview.md`                        |
+| Mappen, bestandsnamen, begrippen, commits                  | `docs/architecture/conventions.md`                     |
+| Welke fout waar, met welke statuscode en melding           | `docs/architecture/errors.md`                          |
+| Welke test waar, en wat niet testen                        | `docs/architecture/testing.md`                         |
+| Secrets, auth, autorisatie, input, headers                 | `docs/architecture/security.md`                        |
+| Waarom iets zo is gekozen                                  | `docs/decisions/README.md` (overzicht van alle ADR's)  |
+| Effect Schema, value objects, domeinfouten                 | `docs/patterns/effect-schema.md`                       |
+| Ports, adapters, services, Config, tests                   | `docs/patterns/effect-services.md`                     |
+| Contract, handlers, middleware, Workers-entry, client      | `docs/patterns/effect-http-api.md`                     |
+| Tabellen, `Database`, Drizzle-adapters                     | `docs/patterns/drizzle.md`                             |
+| Better Auth en de sessie in de middleware                  | `docs/patterns/better-auth.md`                         |
+| Routes, loaders, `notFound()`, Cloudflare-opzet            | `docs/patterns/tanstack-router.md`                     |
+| Queries en mutaties                                        | `docs/patterns/tanstack-query.md`                      |
+| Formulieren                                                | `docs/patterns/tanstack-form.md`                       |
+| Wat dit project doet, en zijn eigen begrippen              | `docs/project/overview.md`, `docs/project/glossary.md` |
+
+Wil je iets anders doen dan een ADR zegt, schrijf dan een nieuwe ADR; wijk er niet stilzwijgend van af.
+
+## Definition of Done
+
+- `bun run check` is groen.
+- Elke nieuwe service heeft een test voor het succes-pad en een test per fout in zijn signatuur (zodra Vitest er is, BOO-120).
+- Voeg je een nieuw patroon, commando of map toe, dan werk je de docs en deze `CLAUDE.md` bij.
+- Geen nieuwe dependencies zonder toestemming.
+
+## Anti-slop-regels
+
+- Een nieuwe feature kopieert de structuur uit `example/` en volgt het patroon exact. Afwijken alleen als het issue erom vraagt.
+- Geen commentaar dat herhaalt wat de code doet; wel commentaar dat uitlegt waarom.
+- Geen `any`, geen `as` om een typefout weg te werken, geen `@ts-ignore` of `@ts-expect-error`.
+- Geen `try/catch` of `Promise` in Effect-code.
+- Geen dependencies, abstracties of helpers die het issue niet vraagt.
+- Bij twijfel over een library: kijk in `repos/` (of de geïnstalleerde package), niet op het web.
