@@ -93,7 +93,7 @@ Docs zijn kebab-case. ADR's zijn genummerd: `0001-bun-workspaces.md`.
 - Geen `any`, geen `as` om een typefout weg te werken, geen `@ts-ignore` of `@ts-expect-error`. Botst een library-type met een strikte optie, dan beslissen we per geval en leggen het vast.
 - Geen `try/catch` of `Promise` in Effect-code.
 - Geen abstracties of helpers die het issue niet vraagt.
-- Bij twijfel over een library: kijk in `repos/`, niet op het web. Patroonbestanden per library staan in `docs/patterns/`: nu voor Effect (`effect-schema.md`, `effect-services.md`, `effect-http-api.md`), Drizzle (`drizzle.md`) en Better Auth (`better-auth.md`); TanStack _(komt in BOO-146)_.
+- Bij twijfel over een library: kijk in `repos/`, niet op het web. Patroonbestanden per library staan in `docs/patterns/`: nu voor Effect (`effect-schema.md`, `effect-services.md`, `effect-http-api.md`), Drizzle (`drizzle.md`), Better Auth (`better-auth.md`) en TanStack (`tanstack-router.md`, `tanstack-query.md`, `tanstack-form.md`).
 
 ### Commits en branches
 
