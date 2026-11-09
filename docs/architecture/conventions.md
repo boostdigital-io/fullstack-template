@@ -99,6 +99,7 @@ Docs zijn kebab-case. ADR's zijn genummerd: `0001-bun-workspaces.md`.
 
 - Conventional Commits: `type(scope)!: onderwerp`, met scope en `!` optioneel. Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. De eerste regel is maximaal 100 tekens. `scripts/commitMsg.ts` controleert dit in de commit-msg-hook ([ADR 0022](../decisions/0022-conventional-commits.md)).
 - De issue-ID staat als footer, niet in de eerste regel: `Refs: BOO-123`.
+- De PR-beschrijving begint met `Closes BOO-123`, zodat Linear het issue na het mergen zelf sluit. In commits blijft het `Refs: BOO-123` als footer.
 - Eén Linear-issue is één branch, met de naam die Linear voorstelt (`guus/boo-123-…`).
 - Nooit naar `main` pushen, nooit zelf mergen. `main` accepteert alleen merge-commits via een PR met groene CI ([ADR 0023](../decisions/0023-ci-as-gate.md)).
 

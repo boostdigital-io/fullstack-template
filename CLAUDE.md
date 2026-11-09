@@ -9,6 +9,7 @@ Hoe we bouwen staat in `docs/`. Het plan (https://claude.ai/artifact/ECzxwZiTRNP
 ## Werkwijze
 
 - Eén Linear-issue is één sessie, één branch en één PR. Het issue is de bron van waarheid en bepaalt de scope: doe niets daarbuiten. Vind je onderweg iets anders, meld het of stel een issue voor.
+- De PR-beschrijving begint met `Closes BOO-<n>`, zodat Linear het issue na het mergen sluit. In commits blijft het `Refs: BOO-<n>`.
 - Starten met een issue gaat straks via de `/issue`-skill _(komt in BOO-115)_.
 
 ## De repo

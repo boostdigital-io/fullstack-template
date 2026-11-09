@@ -10,7 +10,7 @@ Van buiten naar binnen: handler → service → port → adapter. Uitleg: `docs/
 - **Services** zijn functies met `Effect.fn`, één per bestand in `services/`, geen Effect services ([ADR 0008](../../docs/decisions/0008-services-as-functions.md)). Ze vragen alleen ports op; Biome blokkeert `drizzle-orm`, `better-auth`, `cloudflare:workers`, `*.drizzle` en `*.memory` in `services/**`.
 - **Ports** zijn Effect services (`Context.Service`), bijvoorbeeld `repositories/todoRepository.ts`.
 - **Adapters** zijn Layers met de variant achter de naam: `todoRepository.drizzle.ts` → `TodoRepositoryDrizzle`, `todoRepository.memory.ts` → `TodoRepositoryMemory`.
-- **`src/layers.ts`** is de enige composition root: alleen daar worden ports aan adapters gekoppeld _(komt in BOO-117)_. `src/index.ts` is alleen de Worker-entry.
+- **`src/layers.ts`** is de enige composition root: alleen daar worden ports aan adapters gekoppeld _(komt in BOO-117)_. `CurrentUser` is de uitzondering: die levert `authenticationMiddleware` per request (zie `docs/patterns/effect-http-api.md`, Middleware die een Effect service levert). `src/index.ts` is alleen de Worker-entry.
 
 Patronen: `docs/patterns/effect-services.md`, `docs/patterns/effect-http-api.md`, `docs/patterns/drizzle.md`.
 
