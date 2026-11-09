@@ -23,6 +23,7 @@ Hoe we bouwen staat in `docs/`. Het plan (https://claude.ai/artifact/ECzxwZiTRNP
 | `docs/`             | Architectuur, besluiten, patronen en projectcontext.          |
 | `repos/`            | Broncode van libraries op onze versie. Alleen-lezen.          |
 | `scripts/`          | Tooling-scripts (draaien met Bun, niet op Workers).           |
+| `.claude/`          | Claude Code-instellingen en hooks (zie hieronder).            |
 
 Elke workspace heeft `src/` en `example/`. `example/` bevat de referentie-feature `todos`: die wordt niet gebouwd, en `src/` importeert er nooit uit.
 
@@ -36,6 +37,8 @@ Elke workspace heeft `src/` en `example/`. `example/` bevat de referentie-featur
 | `bun run typecheck`   | Typecheck in alle workspaces (`effect-tsgo`).             |
 | `bun run repos:sync`  | Zet `repos/` op de geïnstalleerde versies.                |
 | `bun run repos:check` | Faalt als `repos/` afwijkt van de geïnstalleerde versies. |
+
+Claude Code-hooks (`.claude/settings.json`): na elke `Edit` of `Write` draait `biome check --write` op het bestand; wat overblijft, krijg je meteen terug om op te lossen. Geweigerd zijn: schrijven in `repos/`, lezen van `.dev.vars` en `.env*`, `git push` naar `main` en `gh pr merge`. Persoonlijke instellingen horen in `.claude/settings.local.json` (staat in `.gitignore`).
 
 Git-hooks: pre-commit draait Biome op de gestagede bestanden, commit-msg controleert de commitboodschap, pre-push draait de typecheck. Tests en hun commando's komen in BOO-120.
 

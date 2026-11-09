@@ -15,4 +15,4 @@ Claude schrijft het grootste deel van de code. Kwaliteit en controle blijven bij
 ## Gevolgen
 
 - Elke wijziging gaat langs een review.
-- `git push` naar `main` en `gh pr merge` worden geweigerd in `.claude/settings.json` (komt in BOO-113).
+- `git push` naar `main` en `gh pr merge` worden geweigerd in `.claude/settings.json`; een PreToolUse-hook vangt ook `git push` vanaf `main`. Dit voorkomt vergissingen; de echte poort is de ruleset op `main` (BOO-107).

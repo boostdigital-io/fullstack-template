@@ -10,7 +10,7 @@ De architectuur doet veel van het werk: de web-app heeft geen secrets, input wor
 - Secrets lees je als `Config.Redacted` (zie [effect-services.md](../patterns/effect-services.md#config)), zodat ze nooit leesbaar in logs of foutmeldingen belanden.
 - Productie via `wrangler secret`; lokaal via `.dev.vars`, met een `.dev.vars.example` zonder echte waarden. `.dev.vars` staat in `.gitignore`, `.dev.vars.example` niet.
 - Alle secrets zitten in de API-Worker. De web-app heeft er geen.
-- `.claude/settings.json` weigert het lezen van `.dev.vars` en `.env*` _(komt in BOO-113)_.
+- `.claude/settings.json` weigert het lezen van `.dev.vars` en `.env*` in elke map; `.dev.vars.example` blijft leesbaar. Dit voorkomt vergissingen en is geen beveiliging: een omweg via een script kan nog steeds, dus echte secrets staan nooit in de repo.
 
 ## Domeinen, CORS en cookies
 

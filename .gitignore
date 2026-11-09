@@ -40,5 +40,8 @@ test-results/
 # IntelliJ based IDEs
 .idea
 
+# Claude Code: persoonlijke instellingen
+.claude/settings.local.json
+
 # Finder (MacOS) folder config
 .DS_Store
