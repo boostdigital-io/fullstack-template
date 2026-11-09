@@ -32,6 +32,12 @@ Better Auth draait met een instantie per request: `docs/patterns/better-auth.md`
 - Secrets altijd als `Config.Redacted`. Nooit `process.env`.
 - Zie `docs/patterns/effect-services.md` (Config) en `docs/architecture/security.md`.
 
+## Database en migraties
+
+- Lokale config staat in `.dev.vars` (kopie van `.dev.vars.example`). `DATABASE_URL` daarin is alleen voor `drizzle-kit`; de Worker praat via Hyperdrive.
+- `db:generate`, `db:migrate` en `db:studio` draaien `drizzle-kit` met `drizzle.config.ts`. Tabellen: `src/**/*Table.ts`; migraties: `src/db/migrations/`. Zie `docs/patterns/drizzle.md` (Migraties).
+- Nooit migraties in de Worker draaien.
+
 ## Tests
 
 Tests staan naast de code. Services testen met `.memory`-adapters via `testing/testLayer.ts` _(komt in BOO-118)_. Soorten tests en bestandsnamen: `docs/architecture/testing.md`. Gebruik nooit `bun test`.

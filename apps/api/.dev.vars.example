@@ -1,0 +1,2 @@
+# Kopieer naar .dev.vars. Deze waarden horen bij de Docker-database uit docker-compose.yml.
+DATABASE_URL=postgres://fullstack_template:fullstack_template@localhost:5432/fullstack_template
