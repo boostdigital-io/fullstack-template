@@ -76,7 +76,7 @@ Voeg je een nieuw patroon, commando of map toe, werk dan de docs en `CLAUDE.md` 
 ## 10. PR openen
 
 - `git push -u origin <branch>`. Nooit naar `main`.
-- Schrijf de PR-body naar een tijdelijk bestand (`mktemp`) en open de PR met `gh pr create --title "<eerste commitregel>" --body-file <bestand>`, zodat Markdown en checkboxen intact blijven. Laat `--base main` weg: `gh` kiest zelf de standaardbranch, en een regel met `git push` die op `main` eindigt, raakt de weigerregel `git push * main` uit `.claude/settings.json`.
+- Schrijf de PR-body naar een tijdelijk bestand (`mktemp`) en open de PR met `gh pr create --title "<eerste commitregel>" --body-file <bestand>`, zodat Markdown en checkboxen intact blijven. `--base` is niet nodig: `gh` kiest zelf de standaardbranch.
 - De body bevat, in deze volgorde:
   1. `Closes $0` als eerste regel, zodat Linear het issue na het mergen sluit;
   2. een korte samenvatting;
