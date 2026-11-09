@@ -120,6 +120,24 @@ import { sql } from "drizzle-orm";
 db.select().from(todoTable).where(sql`lower(${todoTable.title}) = ${search}`);
 ```
 
+### Migraties
+
+Migraties maak en draai je met `drizzle-kit` (0.31.x, hoort bij `drizzle-orm` 0.45.x) via Bun, lokaal of in CI, nooit in de Worker. De config staat in `apps/api/drizzle.config.ts`:
+
+- **Tabellen**: elk bestand dat past op `src/**/*Table.ts`. Tabellen in `example/` doen niet mee.
+- **Migraties**: `src/db/migrations/`. Gegenereerd: niet met de hand aanpassen, en Biome slaat ze over.
+- **Verbinding**: `DATABASE_URL` uit `apps/api/.dev.vars`, het bestand dat ook `wrangler dev` leest. De scripts laden het met `bun --env-file=.dev.vars`. Ontbreekt `DATABASE_URL`, dan stopt het commando met een melding; er is geen standaardwaarde. De Worker zelf gebruikt `DATABASE_URL` niet, die praat via Hyperdrive.
+
+Lokaal draait Postgres in Docker (`docker compose up -d`, zie `docker-compose.yml` in de root). Kopieer `apps/api/.dev.vars.example` naar `apps/api/.dev.vars`; die bevat de waarde voor de Docker-database.
+
+| Script                | Wat                                                     |
+| --------------------- | ------------------------------------------------------- |
+| `bun run db:generate` | Maakt een migratie uit de verschillen in de tabellen.   |
+| `bun run db:migrate`  | Voert openstaande migraties uit tegen `DATABASE_URL`.   |
+| `bun run db:studio`   | Opent Drizzle Studio op `https://local.drizzle.studio`. |
+
+De scripts werken vanuit de root en vanuit `apps/api`. Pas je een tabel aan, draai dan `db:generate` en commit de migratie samen met de tabel.
+
 ## Wat je niet doet
 
 - Geen string-interpolatie in SQL en geen `sql.raw` met input van buiten.
@@ -129,7 +147,9 @@ db.select().from(todoTable).where(sql`lower(${todoTable.title}) = ${search}`);
 - Geen `try/catch` of `await` in de adapter; gebruik `Effect.tryPromise`.
 - Geen `drizzle-zod` of andere validatie naast Effect Schema ([ADR 0011](../decisions/0011-effect-schema-only.md)).
 - Geen Drizzle 1.0-API's (zoals `defineRelations`): die horen bij de RC.
-- Transacties en migraties staan hier nog niet in. Migraties met `drizzle-kit` komen in BOO-116.
+- Geen `drizzle-kit push`: elke wijziging in de database gaat via een migratie in git.
+- Geen migratie met de hand aanpassen of verwijderen nadat hij is gemerged.
+- Transacties staan hier nog niet in.
 
 ## Meer in `repos/drizzle`
 
