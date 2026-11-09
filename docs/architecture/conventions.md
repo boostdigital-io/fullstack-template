@@ -41,7 +41,7 @@ packages/contract/
 └── example/todos/       todosGroup.ts, index.ts                                            (BOO-122)
 ```
 
-In de root: `docs/`, `repos/` (vendored, alleen-lezen, [ADR 0012](../decisions/0012-vendored-repos.md)), `scripts/`, `.claude/` (Claude Code-instellingen en hooks), `.github/`, `.husky/`, `.zed/`, `biome.json`, `bunfig.toml`, `tsconfig.base.json`.
+In de root: `docs/`, `repos/` (vendored, alleen-lezen, [ADR 0012](../decisions/0012-vendored-repos.md)), `scripts/`, `.claude/` (Claude Code-instellingen, hooks en skills), `.mcp.json` (MCP-servers, nu Linear), `.worktreeinclude` (wat Claude Code naar een nieuwe worktree kopieert), `.github/`, `.husky/`, `.zed/`, `biome.json`, `bunfig.toml`, `tsconfig.base.json`.
 
 ## Naamgeving
 
