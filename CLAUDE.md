@@ -10,7 +10,7 @@ Hoe we bouwen staat in `docs/`. Het plan (https://claude.ai/artifact/ECzxwZiTRNP
 
 - Eén Linear-issue is één sessie, één branch en één PR. Het issue is de bron van waarheid en bepaalt de scope: doe niets daarbuiten. Vind je onderweg iets anders, meld het of stel een issue voor.
 - De PR-beschrijving begint met `Closes BOO-<n>`, zodat Linear het issue na het mergen sluit. In commits blijft het `Refs: BOO-<n>`.
-- Starten met een issue gaat straks via de `/issue`-skill _(komt in BOO-115)_.
+- Start een issue met `/issue BOO-<n>`: issue ophalen, branch, plan, na akkoord bouwen en een PR openen.
 
 ## De repo
 
@@ -20,10 +20,11 @@ Hoe we bouwen staat in `docs/`. Het plan (https://claude.ai/artifact/ECzxwZiTRNP
 | `apps/web`          | De web-app (TanStack Start). Eigen `CLAUDE.md`.               |
 | `packages/domain`   | Entities, value objects, domeinfouten. Eigen `CLAUDE.md`.     |
 | `packages/contract` | De HttpApi-definitie die api en web delen. Eigen `CLAUDE.md`. |
-| `docs/`             | Architectuur, besluiten, patronen en projectcontext.          |
+| `docs/`             | Architectuur, besluiten, patronen, guides en projectcontext.  |
 | `repos/`            | Broncode van libraries op onze versie. Alleen-lezen.          |
 | `scripts/`          | Tooling-scripts (draaien met Bun, niet op Workers).           |
-| `.claude/`          | Claude Code-instellingen en hooks (zie hieronder).            |
+| `.claude/`          | Claude Code-instellingen, hooks en skills (zie hieronder).    |
+| `.mcp.json`         | MCP-servers voor elke sessie in deze repo (Linear).           |
 
 Elke workspace heeft `src/` en `example/`. `example/` bevat de referentie-feature `todos`: die wordt niet gebouwd, en `src/` importeert er nooit uit.
 
@@ -74,6 +75,7 @@ Git-hooks: pre-commit draait Biome op de gestagede bestanden, commit-msg control
 | Queries en mutaties                                        | `docs/patterns/tanstack-query.md`                      |
 | Formulieren                                                | `docs/patterns/tanstack-form.md`                       |
 | Wat dit project doet, en zijn eigen begrippen              | `docs/project/overview.md`, `docs/project/glossary.md` |
+| Aan meer issues tegelijk werken (worktrees)                | `docs/guides/parallel-sessions.md`                     |
 
 Wil je iets anders doen dan een ADR zegt, schrijf dan een nieuwe ADR; wijk er niet stilzwijgend van af.
 

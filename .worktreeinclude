@@ -1,0 +1,3 @@
+# Gitignored bestanden die Claude Code naar elke nieuwe worktree kopieert (`claude -w`).
+# Zie docs/guides/parallel-sessions.md.
+.dev.vars
