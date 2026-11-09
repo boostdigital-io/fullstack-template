@@ -1,8 +1,9 @@
 // PostToolUse-hook (BOO-113): draait `biome check --write` op elk bestand dat Claude bewerkt.
 // Wat Biome niet zelf kan oplossen, gaat via stderr en exitcode 2 terug naar Claude, zodat die het
-// in dezelfde stap oplost. Bestanden die Biome niet controleert (Markdown, `repos/`, ignores)
-// laten we stil passeren.
+// in dezelfde stap oplost. Bestanden die Biome niet controleert (Markdown, `repos/`, ignores) of die
+// buiten de repo liggen (bijv. een PR-tekst in een tijdelijk bestand) laten we stil passeren.
 import { realpath } from "node:fs/promises";
+import { isAbsolute, relative } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { $ } from "bun";
@@ -15,8 +16,14 @@ const field = (value: unknown, key: string): unknown =>
 // Biome eist dat het bestand onder de root ligt. Loopt een van beide via een symlink (bijv. `/tmp`
 // naar `/private/tmp` op macOS), dan klopt dat alleen als we beide naar hun echte pad omzetten.
 const check = async (filePath: string): Promise<string | undefined> => {
+  const realFilePath = await realpath(filePath);
+  const fromRoot = relative(ROOT, realFilePath);
+  // Buiten de root weigert Biome het bestand met een fout; zo'n bestand is niet van ons.
+  if (fromRoot.startsWith("..") || isAbsolute(fromRoot)) {
+    return;
+  }
   const result =
-    await $`bunx biome check --write --colors=off --no-errors-on-unmatched --files-ignore-unknown=true ${await realpath(filePath)}`
+    await $`bunx biome check --write --colors=off --no-errors-on-unmatched --files-ignore-unknown=true ${realFilePath}`
       .cwd(ROOT)
       .nothrow()
       .quiet();
