@@ -12,13 +12,16 @@ Per workspace de mappen en de bestanden die een rol hebben. `example/` volgt dez
 apps/api/
 ├── src/
 │   ├── auth/            auth.ts, authTable.ts (gegenereerd), authenticationMiddleware.ts   (BOO-124, BOO-125)
-│   ├── db/              database.ts (Drizzle via Hyperdrive, per request)                  (BOO-117)
+│   ├── db/              database.ts (Drizzle via Hyperdrive, per request)
 │   │   └── migrations/  gegenereerd door `db:generate`
 │   ├── shared/          gedeelde ports: idGenerator.ts, emailSender.ts                      (BOO-118)
-│   ├── config/          appConfig.ts                                                       (BOO-117)
+│   ├── config/          appConfig.ts
 │   ├── testing/         testLayer.ts: .memory-adapters, vaste gebruiker en ID's            (BOO-118)
-│   ├── layers.ts        composition root: ApiLayer, met AppServices en RequestServices      (BOO-117)
+│   ├── layers.ts        composition root: ApiLayer, met RequestServices (en AppServices, BOO-118)
+│   ├── worker.ts        WorkerEnv en WorkerContext: env en ctx per request
+│   ├── workerConfiguration.d.ts  gegenereerd door `wrangler types`
 │   └── index.ts         Worker-entry: alleen toWebHandler en fetch
+├── wrangler.jsonc       Worker-config: naam, Hyperdrive-binding
 └── example/todos/       services/, repositories/, todoTable.ts, todosHandlers.ts           (BOO-123)
 
 apps/web/
@@ -37,7 +40,7 @@ packages/domain/
 └── example/todos/       todo.ts, todoErrors.ts, todoRules.ts, index.ts                     (BOO-121)
 
 packages/contract/
-├── src/                 api.ts (HttpApi), index.ts                                         (BOO-117)
+├── src/                 api.ts (HttpApi), index.ts
 │   └── shared/          currentUser.ts, authentication.ts, authErrors.ts                   (BOO-125)
 └── example/todos/       todosGroup.ts, index.ts                                            (BOO-122)
 ```

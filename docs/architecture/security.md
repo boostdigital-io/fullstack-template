@@ -6,7 +6,7 @@ De architectuur doet veel van het werk: de web-app heeft geen secrets, input wor
 
 ## Config en secrets
 
-- Config wordt bij het opstarten gevalideerd met Effect `Config`. Ontbreekt er iets of is een waarde ongeldig, dan faalt de Worker; nooit een stille terugval op een standaardwaarde _(komt in BOO-117)_.
+- Config wordt bij het opstarten gevalideerd met Effect `Config`. Ontbreekt er iets of is een waarde ongeldig, dan faalt de Worker; nooit een stille terugval op een standaardwaarde. Omdat `env` per request binnenkomt, gebeurt dat per request: elke request faalt dan met een 500 en een gelogde `ConfigError`.
 - Secrets lees je als `Config.Redacted` (zie [effect-services.md](../patterns/effect-services.md#config)), zodat ze nooit leesbaar in logs of foutmeldingen belanden.
 - Productie via `wrangler secret`; lokaal via `.dev.vars`, met een `.dev.vars.example` zonder echte waarden. `.dev.vars` staat in `.gitignore`, `.dev.vars.example` niet.
 - Alle secrets zitten in de API-Worker. De web-app heeft er geen.
