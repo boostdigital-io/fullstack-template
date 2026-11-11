@@ -64,7 +64,7 @@ export const TodoRepositoryMemory = Layer.effect(
 - De `.memory`-adapter gedraagt zich als de echte: dezelfde fouten in dezelfde gevallen (hier de unique-regel uit de tabel). De Drizzle-adapter staat in [drizzle.md](drizzle.md#adapter).
 - Heeft de adapter zelf een Effect service nodig (zoals `Database`), dan `yield*` je die in een `Effect.gen` binnen `Layer.effect`. Die requirement staat dan in het derde type van de Layer.
 - Een driverfout met betekenis wordt een domeinfout; de rest wordt een defect met `Effect.orDie` (zie [errors.md](../architecture/errors.md#regels-per-laag)).
-- Koppelen gebeurt met `Layer.provide` (verbergt de dependency) of `Layer.provideMerge` (houdt hem zichtbaar). Alleen in `layers.ts` _(komt in BOO-117)_ en in tests.
+- Koppelen gebeurt met `Layer.provide` (verbergt de dependency) of `Layer.provideMerge` (houdt hem zichtbaar). Alleen in `layers.ts` en in tests.
 - In de API is elke port een requirement per request. Welke adapters één keer en welke per request worden opgebouwd, staat in [effect-http-api.md](effect-http-api.md#de-httpapi-als-handler-op-workers).
 
 ### Service: een functie met `Effect.fn`
@@ -129,7 +129,8 @@ export class AppConfig extends Context.Service<
 
 - De constructors zijn PascalCase: `Config.String`, `Config.Number`, `Config.Boolean`, `Config.URL`, `Config.Redacted`. Een `Config` is direct te `yield*`en.
 - Ontbreekt een sleutel, dan faalt de Layer met een `ConfigError`. Geen `Config.withDefault` voor waarden die in productie verplicht zijn.
-- De waarden komen van de actieve `ConfigProvider`. In tests: `ConfigProvider.layer(ConfigProvider.fromUnknown({ … }))`. Hoe de Worker zijn `env` als provider aanbiedt, wordt vastgelegd in BOO-117.
+- De waarden komen van de actieve `ConfigProvider`. In tests: `ConfigProvider.layer(ConfigProvider.fromUnknown({ … }))`. In de Worker is het `ConfigProvider.fromUnknown(env)`, per request opgebouwd in `RequestServices` (zie [effect-http-api.md](effect-http-api.md#env-en-ctx-per-request)).
+- Een standaardwaarde mag alleen voor waarden die nergens verplicht zijn, zoals `LOG_LEVEL`. `Config.withDefault` geldt alleen als de sleutel ontbreekt; een ongeldige waarde (`LOG_LEVEL=Banana`) blijft een `ConfigError`, en die laat de request falen met een 500.
 - De secret lees je pas uit waar hij nodig is, met `Redacted.value(config.authSecret)`.
 
 ### Testen met `@effect/vitest`

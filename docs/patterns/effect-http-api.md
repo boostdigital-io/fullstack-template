@@ -103,26 +103,46 @@ Een fout die het endpoint niet declareert, compileert niet ("Missing errors Todo
 Wat een handler via een service opvraagt (hier `TodoRepository`, `IdGenerator` en `CurrentUser`), is een requirement **per request**, geen requirement van de Layer. `Layer.provide` op de handlers-Layer levert alleen wat de Layer zelf bij het opbouwen nodig heeft (zoals de middleware); `CurrentUser` levert de middleware; elke andere port lever je op een van deze twee manieren:
 
 - **Eén keer, voor alle requests**: `HttpRouter.provideRequest(layer)`. Alleen voor adapters zonder I/O-object, zoals `IdGenerator`.
-- **Per request**: een `HttpRouter.middleware` die de Layer opbouwt met `Layer.build`. Die draait in de scope van het request, dus de Layer wordt per request gemaakt en na de response opgeruimd. Hier horen `Database` en alles wat erop bouwt: de adapters en `Auth` ([better-auth.md](better-auth.md)). Ze delen binnen het request één verbinding.
+- **Per request**: een globale `HttpRouter.middleware` (`{ global: true }`) die de Layer opbouwt met `Layer.build`. Die draait in de scope van het request, dus de Layer wordt per request gemaakt en na de response opgeruimd. Hier horen `Database` en alles wat erop bouwt (de adapters en `Auth`, [better-auth.md](better-auth.md)), en `AppConfig`. Ze delen binnen het request één verbinding.
 
-De composition root (`layers.ts`) koppelt alles: handlers, middleware en beide soorten ports.
+#### `env` en `ctx` per request
+
+De Worker krijgt `env` (bindings en variabelen) en `ctx` (`waitUntil`) per request in `fetch`. `index.ts` geeft ze als `Context` mee aan het tweede argument van `handler`, als de Effect services `WorkerEnv` en `WorkerContext` uit `src/worker.ts`. Het type van `env` is `Env`, gegenereerd door `wrangler types`.
+
+- **Waarom niet `import { env } from "cloudflare:workers"`**: met de `Context` dwingt de typecheck af dat `env` en `ctx` er zijn, en een test geeft een nep-`env` mee zonder `cloudflare:workers` na te bootsen.
+- **Waarom globaal**: een gewone route-middleware mag geen per-request-service als `WorkerEnv` opvragen; het type van `.layer` wordt dan `"Need to .combine(middleware) …"`. Een globale middleware mag dat wel; wat hij opvraagt, wordt een eis aan `handler`. Een globale middleware draait vóór de HttpApi-middleware (zoals de authenticatie) en ook bij een 404, dus een configfout laat elke request falen.
+- **Config**: de `ConfigProvider` is `ConfigProvider.fromUnknown(env)`. Niet `fromEnvRecord`: `env` bevat ook bindings (zoals `HYPERDRIVE`) en is dus geen `Record<string, string>`.
+
+De composition root (`layers.ts`) koppelt alles: handlers, middleware, config en beide soorten ports.
 
 ```ts
 // apps/api/src/layers.ts
-import { Effect, Layer } from "effect";
+import { ConfigProvider, Effect, Layer } from "effect";
 import { HttpRouter, HttpServer } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
 
-const PerRequestLayer = Layer.mergeAll(TodoRepositoryDrizzle, AuthLayer).pipe(
-  Layer.provide(Database.layer),
+const ConfigFromEnv = Layer.unwrap(
+  Effect.gen(function* () {
+    const env = yield* WorkerEnv;
+    return ConfigProvider.layer(ConfigProvider.fromUnknown(env));
+  }),
 );
 
-const RequestServices = HttpRouter.middleware<{ provides: TodoRepository | Auth }>()((httpEffect) =>
-  Effect.gen(function* () {
-    const services = yield* Layer.build(PerRequestLayer);
-    return yield* Effect.provideContext(httpEffect, services);
-  }),
-).layer;
+const PerRequestLayer = Layer.mergeAll(
+  AppConfig.layer,
+  Layer.mergeAll(TodoRepositoryDrizzle, AuthLayer).pipe(Layer.provideMerge(Database.layer)),
+).pipe(Layer.provide(ConfigFromEnv));
+
+const RequestServices = HttpRouter.middleware<{
+  provides: AppConfig | Database | TodoRepository | Auth;
+}>()(
+  (httpEffect) =>
+    Effect.gen(function* () {
+      const services = yield* Layer.build(PerRequestLayer);
+      return yield* Effect.provideContext(httpEffect, services);
+    }),
+  { global: true },
+);
 
 const AppServices = HttpRouter.provideRequest(IdGeneratorUuid);
 
@@ -134,20 +154,22 @@ export const ApiLayer = HttpApiBuilder.layer(Api).pipe(
 );
 ```
 
-De Worker-entry bouwt alleen de handler:
+De Worker-entry bouwt alleen de handler en geeft `env` en `ctx` door:
 
 ```ts
 // apps/api/src/index.ts
+import { Context } from "effect";
 import { HttpRouter } from "effect/http";
 
 const { handler } = HttpRouter.toWebHandler(ApiLayer);
 
 export default {
-  fetch: (request: Request) => handler(request),
-};
+  fetch: (request, env, ctx) =>
+    handler(request, Context.make(WorkerEnv, env).pipe(Context.add(WorkerContext, ctx))),
+} satisfies ExportedHandler<Env>;
 ```
 
-Vergeet je een port, dan eist `handler` hem als tweede argument (een `Context`), en compileert `handler(request)` niet. Zo valt een ontbrekende adapter op tijdens de typecheck.
+Vergeet je een port, dan eist `handler` hem in de `Context` van het tweede argument, en compileert `fetch` niet. Zo valt een ontbrekende adapter op tijdens de typecheck. Hetzelfde geldt als `env` of `ctx` ontbreekt.
 
 ### De getypte client
 
@@ -175,6 +197,7 @@ Het resultaat is `Effect<Todo, TodoNotFound | Unauthorized | …>`: de fouten ui
 - Geen domeinfout in de handler vertalen naar een andere fout of statuscode.
 - Geen `HttpApiBuilder.layer(...)` of `toWebHandler` binnen `fetch`. Eén keer, op module-niveau.
 - Geen database-client of andere I/O in een Layer die op module-niveau wordt gebouwd, en dus ook niet in `provideRequest`. Die horen in `RequestServices`.
+- Geen `import { env } from "cloudflare:workers"` en geen `env` die `fetch` weggooit. `env` en `ctx` komen via `WorkerEnv` en `WorkerContext`.
 - Geen `fetch` naar de eigen API buiten de getypte client.
 
 ## Meer in `repos/effect`

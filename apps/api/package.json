@@ -11,12 +11,15 @@
     "postgres": "3.4.9"
   },
   "scripts": {
+    "dev": "wrangler dev",
+    "types": "wrangler types src/workerConfiguration.d.ts --env-file .dev.vars.example",
     "typecheck": "effect-tsgo tsc --noEmit",
     "db:generate": "bun --env-file=.dev.vars run drizzle-kit generate",
     "db:migrate": "bun --env-file=.dev.vars run drizzle-kit migrate",
     "db:studio": "bun --env-file=.dev.vars run drizzle-kit studio"
   },
   "devDependencies": {
-    "drizzle-kit": "0.31.11"
+    "drizzle-kit": "0.31.11",
+    "wrangler": "4.158.0"
   }
 }
