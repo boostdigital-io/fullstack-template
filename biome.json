@@ -13,6 +13,7 @@
       "!**/components/ui",
       "!**/migrations",
       "!**/*.gen.ts",
+      "!apps/api/src/workerConfiguration.d.ts",
       "!apps/api/src/auth/authTable.ts"
     ]
   },

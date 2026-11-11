@@ -1,0 +1,18 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // De enige plek met de Worker-naam; `bun run init` past hem per project aan (BOO-138).
+  "name": "fullstack-template-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      // Placeholder: de echte ID komt per project via de checklist (BOO-139).
+      "id": "00000000000000000000000000000000",
+      // Lokaal praat de binding rechtstreeks met de Docker-database (docker-compose.yml).
+      // Zelfde URL als DATABASE_URL in .dev.vars.example.
+      "localConnectionString": "postgres://fullstack_template:fullstack_template@localhost:5432/fullstack_template"
+    }
+  ]
+}
