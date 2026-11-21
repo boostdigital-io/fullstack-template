@@ -37,6 +37,7 @@ Waarom we bouwen zoals we bouwen. Elk besluit staat in een eigen Architecture De
 | [0029](0029-github-template.md)             | Nieuwe projecten via "Use this template" en `bun run init`                            |
 | [0030](0030-pinned-bun.md)                  | Bun vastgepind op een stabiele versie via `packageManager`                            |
 | [0031](0031-typescript-7-effect-tsgo.md)    | TypeScript 7 met `effect-tsgo`, zodat Effect-diagnostiek CI laat falen                |
+| [0032](0032-api-tests-via-wrangler.md)      | API-tests via wrangler, niet via `@cloudflare/vitest-pool-workers`                    |
 
 ## Een nieuwe ADR toevoegen
 

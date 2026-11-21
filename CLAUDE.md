@@ -32,10 +32,13 @@ Elke workspace heeft `src/` en `example/`. `example/` bevat de referentie-featur
 
 | Commando                       | Wat                                                                              |
 | ------------------------------ | -------------------------------------------------------------------------------- |
-| `bun run check`                | Lint en typecheck. Draai dit voor elke commit.                                   |
+| `bun run check`                | Lint, typecheck en unit-tests. Draai dit voor elke commit.                       |
 | `bun run lint`                 | Biome-check van de hele repo.                                                    |
 | `bun run format`               | Biome met automatische fixes.                                                    |
-| `bun run typecheck`            | Typecheck in alle workspaces (`effect-tsgo`).                                    |
+| `bun run typecheck`            | Typecheck in alle workspaces en `scripts/` (`effect-tsgo`).                      |
+| `bun run test`                 | Unit-tests (`*.test.ts`) met Vitest.                                             |
+| `bun run test:integration`     | Integratietests (`*.integration.test.ts`) tegen de testdatabase in Docker.       |
+| `bun run test:api`             | API-tests (`*.api.test.ts`) tegen de echte Worker in workerd.                    |
 | `bun run repos:sync`           | Zet `repos/` op de geïnstalleerde versies.                                       |
 | `bun run repos:check`          | Faalt als `repos/` afwijkt van de geïnstalleerde versies.                        |
 | `docker compose up -d`         | Start de lokale Postgres (`docker-compose.yml`). Stoppen: `docker compose down`. |
@@ -49,12 +52,14 @@ De `db:*`-scripts lezen `DATABASE_URL` uit `apps/api/.dev.vars`. Kopieer eerst `
 
 Claude Code-hooks (`.claude/settings.json`): na elke `Edit` of `Write` draait `biome check --write` op het bestand; wat overblijft, krijg je meteen terug om op te lossen. Geweigerd zijn: schrijven in `repos/`, lezen van `.dev.vars` en `.env*`, `git push` naar `main` en `gh pr merge`. Persoonlijke instellingen horen in `.claude/settings.local.json` (staat in `.gitignore`).
 
-Git-hooks: pre-commit draait Biome op de gestagede bestanden, commit-msg controleert de commitboodschap, pre-push draait de typecheck. Tests en hun commando's komen in BOO-120.
+Git-hooks: pre-commit draait Biome op de gestagede bestanden, commit-msg controleert de commitboodschap, pre-push draait de typecheck en de unit-tests.
+
+Tests: unit-tests (`*.test.ts`) voor domein, services en `scripts/`; integratietests (`*.integration.test.ts`) voor adapters, met `TestDatabase` uit `apps/api/src/testing/testDatabase.ts`; API-tests (`*.api.test.ts`) voor de bedrading per feature. Integratie- en API-tests hebben Docker en `TEST_DATABASE_URL` in `apps/api/.dev.vars` nodig. Zie `docs/architecture/testing.md`.
 
 ## Harde regels
 
 - Geen `Bun.*`-API's in code die op Workers draait.
-- Gebruik nooit `bun test`. Tests draaien met Vitest _(komt in BOO-120)_.
+- Gebruik nooit `bun test`. Tests draaien met Vitest (`bun run test`).
 - Conventional Commits, met `Refs: BOO-<n>` als footer.
 - Nooit naar `main` pushen en nooit zelf mergen.
 - Geen nieuwe dependencies zonder eerst te vragen.
@@ -90,7 +95,7 @@ Wil je iets anders doen dan een ADR zegt, schrijf dan een nieuwe ADR; wijk er ni
 ## Definition of Done
 
 - `bun run check` is groen.
-- Elke nieuwe service heeft een test voor het succes-pad en een test per fout in zijn signatuur (zodra Vitest er is, BOO-120).
+- Elke nieuwe service heeft een test voor het succes-pad en een test per fout in zijn signatuur (`bun run test`).
 - Voeg je een nieuw patroon, commando of map toe, dan werk je de docs en deze `CLAUDE.md` bij.
 - Geen nieuwe dependencies zonder toestemming.
 

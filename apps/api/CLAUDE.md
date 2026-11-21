@@ -46,4 +46,9 @@ Better Auth draait met een instantie per request: `docs/patterns/better-auth.md`
 
 ## Tests
 
-Tests staan naast de code. Services testen met `.memory`-adapters via `testing/testLayer.ts` _(komt in BOO-118)_. Soorten tests en bestandsnamen: `docs/architecture/testing.md`. Gebruik nooit `bun test`.
+Tests staan naast de code. Soorten tests en bestandsnamen: `docs/architecture/testing.md`. Gebruik nooit `bun test`.
+
+- Services testen met `.memory`-adapters via `testing/testLayer.ts` _(komt in BOO-118)_.
+- Adapters testen tegen Postgres met `TestDatabase` (`testing/testDatabase.ts`), per test meegegeven met `Effect.provide`. Elke test draait in een transactie die wordt teruggedraaid.
+- API-tests starten de echte Worker met `unstable_startWorker` uit wrangler ([ADR 0032](../../docs/decisions/0032-api-tests-via-wrangler.md)); Hyperdrive wijst dan naar de testdatabase.
+- `TEST_DATABASE_URL` staat in `.dev.vars`; de database wordt aangemaakt en gemigreerd door `testing/globalSetup.ts`.

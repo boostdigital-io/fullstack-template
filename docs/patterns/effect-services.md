@@ -135,7 +135,7 @@ export class AppConfig extends Context.Service<
 
 ### Testen met `@effect/vitest`
 
-> `@effect/vitest` en `vitest` komen in BOO-120. De Effect-code in de tests hieronder is getypecheckt en gedraaid; de aanroepen van `describe`, `it.effect` en `assert` volgen `ai-docs/src/09_testing/` en worden in BOO-120 gecontroleerd. `TestLayer` komt uit `src/testing/testLayer.ts`: alle `.memory`-adapters (zoals `TodoRepositoryMemory` en `IdGeneratorMemory`, die voorspelbare ID's geeft) plus een vaste `CurrentUser` _(BOO-118, BOO-123)_.
+> Een draaiend voorbeeld met `it.effect` en `Effect.provide` staat in `apps/api/src/testing/testDatabase.integration.test.ts`. `TestLayer` komt uit `src/testing/testLayer.ts`: alle `.memory`-adapters (zoals `TodoRepositoryMemory` en `IdGeneratorMemory`, die voorspelbare ID's geeft) plus een vaste `CurrentUser` _(BOO-118, BOO-123)_.
 
 ```ts
 // services/getTodo.test.ts
