@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    // Deze bestanden draaien met Bun (of met Vitest in Node), niet op Workers.
+    "types": ["bun"],
+    // Bun voert .ts rechtstreeks uit; sommige scripts importeren daarom met de extensie erbij.
+    "allowImportingTsExtensions": true
+  },
+  "include": [".", "../.claude/hooks", "../vitest.config.ts"]
+}

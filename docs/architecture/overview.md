@@ -87,7 +87,7 @@ Geen van deze bestanden bestaat al. Het voorbeeld wordt opgebouwd in BOO-121 (do
 Elke app en elk package heeft naast `src/` een map `example/` met de referentie-feature `todos`, in exact dezelfde structuur als `src/` ([ADR 0027](../decisions/0027-example-folders.md)).
 
 - Een nieuwe feature kopieert de structuur uit `example/` naar `src/` en volgt het patroon exact. Afwijken alleen als het issue erom vraagt.
-- `example/` zit in de `include` van elke tsconfig, dus het voorbeeld wordt meegetypecheckt. Zodra Vitest er is, draaien de unit-tests ervan mee _(komt in BOO-120)_.
+- `example/` zit in de `include` van elke tsconfig, dus het voorbeeld wordt meegetypecheckt. De unit-tests ervan draaien mee in `bun run test`.
 - Het voorbeeld wordt nooit gebouwd en nooit aangesloten op de app. `src/` importeert er niets uit (importregel 2).
 - De map heet bewust `example/` zonder punt: zoektools (ripgrep), TypeScript en Vitest slaan verborgen mappen standaard over.
 - `example/` blijft in elk project staan. Het wordt niet opgeruimd.

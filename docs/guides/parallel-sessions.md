@@ -22,6 +22,6 @@ Afsluiten gaat zoals gewoonlijk. Staat er nog werk in de worktree, dan vraagt Cl
 
 ## Gedeeld
 
-- **De Docker-database**. Alle worktrees gebruiken dezelfde lokale Postgres. Draaien twee worktrees tegelijk integratietests, dan kunnen ze elkaars testdatabase raken. Draai integratietests dus niet tegelijk in twee worktrees. Een oplossing komt in BOO-120 als dit in de praktijk misgaat.
+- **De Docker-database**. Alle worktrees gebruiken dezelfde lokale Postgres. Integratie- en API-tests delen de testdatabase `fullstack_template_test`. Elke integratietest draait in een transactie die wordt teruggedraaid, dus tests in twee worktrees zien elkaars data niet. Wel migreert elke run de testdatabase: hebben twee branches verschillende migraties, draai hun tests dan niet tegelijk.
 - **De git-repository**. Branches, `git fetch` en stashes zijn zichtbaar in alle worktrees. Een branch kan maar in één worktree tegelijk uitgecheckt zijn.
 - **Poorten**. Twee dev-servers tegelijk botsen op dezelfde poort. Draai er één, of geef de tweede een andere poort.

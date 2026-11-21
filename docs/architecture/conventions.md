@@ -16,7 +16,7 @@ apps/api/
 │   │   └── migrations/  gegenereerd door `db:generate`
 │   ├── shared/          gedeelde ports: idGenerator.ts, emailSender.ts                      (BOO-118)
 │   ├── config/          appConfig.ts
-│   ├── testing/         testLayer.ts: .memory-adapters, vaste gebruiker en ID's            (BOO-118)
+│   ├── testing/         testDatabase.ts, globalSetup.ts (testdatabase); testLayer.ts       (BOO-118)
 │   ├── layers.ts        composition root: ApiLayer, met RequestServices (en AppServices, BOO-118)
 │   ├── worker.ts        WorkerEnv en WorkerContext: env en ctx per request
 │   ├── workerConfiguration.d.ts  gegenereerd door `wrangler types`
@@ -70,6 +70,7 @@ Biome dwingt dit af met `useFilenamingConvention` (camelCase, PascalCase of de n
 | Middleware-implementatie        | `authenticationMiddleware.ts`                | `AuthenticationMiddleware`                   |
 | Gebruikersmeldingen (web)       | `features/todos/messages.ts`                 | `todoMessages`                               |
 | Gedeelde test-opzet             | `testing/testLayer.ts`                       | `TestLayer`                                  |
+| Testdatabase (integratie)       | `testing/testDatabase.ts`                    | `TestDatabase`                               |
 | Unit-test                       | `createTodo.test.ts`                         |                                              |
 | Integratietest                  | `todoRepository.drizzle.integration.test.ts` |                                              |
 | API-test                        | `todosHandlers.api.test.ts`                  |                                              |

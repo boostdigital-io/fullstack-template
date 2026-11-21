@@ -8,7 +8,7 @@ Bun heeft een eigen test-runner, maar die draait niet in workerd en kent de Effe
 
 ## Besluit
 
-- Vitest is de enige test-runner, met `@effect/vitest` voor Effect-code en Cloudflare's Workers-integratie voor API-tests in workerd.
+- Vitest is de enige test-runner, met `@effect/vitest` voor Effect-code en Cloudflare's Workers-integratie voor API-tests in workerd. Die integratie is `unstable_startWorker` uit wrangler geworden, niet `@cloudflare/vitest-pool-workers` ([ADR 0032](0032-api-tests-via-wrangler.md)).
 - Bun blijft de package manager.
 - Nooit `bun test`.
 
@@ -16,4 +16,5 @@ Bun heeft een eigen test-runner, maar die draait niet in workerd en kent de Effe
 
 - API-tests draaien in de echte runtime.
 - Vitest draait niet in Bun, dus `Bun.*` werkt niet in tests.
-- De opzet komt in BOO-120. Zie [testing.md](../architecture/testing.md).
+- `bun test` stopt meteen met een melding (preload in `bunfig.toml`).
+- Uitwerking: [testing.md](../architecture/testing.md).

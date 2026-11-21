@@ -5,3 +5,7 @@ DATABASE_URL=postgres://fullstack_template:fullstack_template@localhost:5432/ful
 
 # Een van All, Fatal, Error, Warn, Info, Debug, Trace, None. Zonder waarde: Info.
 LOG_LEVEL=Info
+
+# Alleen voor integratie- en API-tests (Vitest). Een eigen database naast de dev-database; de naam moet
+# op _test eindigen. Hij wordt aangemaakt en gemigreerd voordat de tests draaien.
+TEST_DATABASE_URL=postgres://fullstack_template:fullstack_template@localhost:5432/fullstack_template_test
