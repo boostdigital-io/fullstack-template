@@ -92,8 +92,8 @@ export const AuthenticationMiddleware = Layer.succeed(Authentication)(
 
 ### Workers
 
-- Better Auth gebruikt `AsyncLocalStorage`. De Worker heeft daarom `nodejs_compat` nodig in `wrangler.jsonc` _(komt in BOO-117)_.
-- Werk dat Better Auth na de response wil afmaken, kan via `advanced.backgroundTasks.handler`, bijvoorbeeld met `ctx.waitUntil`. Hoe `ctx` de per-request-Layers bereikt, legt BOO-117 vast.
+- Better Auth gebruikt `AsyncLocalStorage`. De Worker heeft daarom `nodejs_compat` nodig in `wrangler.jsonc`; dat staat aan.
+- Werk dat Better Auth na de response wil afmaken, kan via `advanced.backgroundTasks.handler`, bijvoorbeeld met `ctx.waitUntil`. `ctx` lees je in een per-request-Layer met `yield* WorkerContext` (zie [effect-http-api.md](effect-http-api.md#env-en-ctx-per-request)).
 - `auth.handler(request)` beantwoordt de routes onder `/api/auth/*` met een Web `Response`. Hoe die naast HttpApi in de Worker wordt gerouteerd, komt in BOO-124.
 
 ## Wat je niet doet

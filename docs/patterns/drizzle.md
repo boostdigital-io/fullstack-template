@@ -46,7 +46,30 @@ export class Database extends Context.Service<Database, PostgresJsDatabase>()(
 ) {}
 ```
 
-De Layer die de verbinding opent (postgres.js op de Hyperdrive-binding) en hem aan het eind van het request sluit, komt in BOO-117. Hij hoort in `RequestServices`, nooit op module-niveau (zie [effect-http-api.md](effect-http-api.md#de-httpapi-als-handler-op-workers)).
+`Database.layer` opent de verbinding (postgres.js op de Hyperdrive-binding) en sluit hem aan het eind van het request. Hij hoort in `RequestServices`, nooit op module-niveau (zie [effect-http-api.md](effect-http-api.md#de-httpapi-als-handler-op-workers)).
+
+```ts
+// db/database.ts (vervolg)
+static readonly layer = Layer.effect(
+  Database,
+  Effect.gen(function* () {
+    const env = yield* WorkerEnv;
+    const ctx = yield* WorkerContext;
+    const sql = yield* Effect.acquireRelease(
+      Effect.sync(() =>
+        postgres(env.HYPERDRIVE.connectionString, { max: 5, fetch_types: false }),
+      ),
+      (client) => Effect.sync(() => ctx.waitUntil(client.end())),
+    );
+    return Database.of(drizzle({ client: sql }));
+  }),
+);
+```
+
+- `postgres(...)` opent nog geen verbinding; dat gebeurt bij de eerste query. Een request zonder query kost dus geen verbinding.
+- `fetch_types: false` scheelt een round-trip per request: anders haalt postgres.js eerst de array-types op.
+- Het sluiten gaat via `ctx.waitUntil`, zodat het de response niet ophoudt maar de Worker er wel op wacht.
+- Lokaal wijst de binding via `localConnectionString` in `wrangler.jsonc` naar de Docker-database. De Hyperdrive-ID is een placeholder tot een project hem invult (BOO-139).
 
 ### Adapter
 

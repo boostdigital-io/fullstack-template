@@ -30,18 +30,20 @@ Elke workspace heeft `src/` en `example/`. `example/` bevat de referentie-featur
 
 ## Commando's
 
-| Commando               | Wat                                                                              |
-| ---------------------- | -------------------------------------------------------------------------------- |
-| `bun run check`        | Lint en typecheck. Draai dit voor elke commit.                                   |
-| `bun run lint`         | Biome-check van de hele repo.                                                    |
-| `bun run format`       | Biome met automatische fixes.                                                    |
-| `bun run typecheck`    | Typecheck in alle workspaces (`effect-tsgo`).                                    |
-| `bun run repos:sync`   | Zet `repos/` op de geïnstalleerde versies.                                       |
-| `bun run repos:check`  | Faalt als `repos/` afwijkt van de geïnstalleerde versies.                        |
-| `docker compose up -d` | Start de lokale Postgres (`docker-compose.yml`). Stoppen: `docker compose down`. |
-| `bun run db:generate`  | Maakt een migratie uit de tabellen (`src/**/*Table.ts` in `apps/api`).           |
-| `bun run db:migrate`   | Voert de migraties uit tegen `DATABASE_URL`.                                     |
-| `bun run db:studio`    | Opent Drizzle Studio.                                                            |
+| Commando                       | Wat                                                                              |
+| ------------------------------ | -------------------------------------------------------------------------------- |
+| `bun run check`                | Lint en typecheck. Draai dit voor elke commit.                                   |
+| `bun run lint`                 | Biome-check van de hele repo.                                                    |
+| `bun run format`               | Biome met automatische fixes.                                                    |
+| `bun run typecheck`            | Typecheck in alle workspaces (`effect-tsgo`).                                    |
+| `bun run repos:sync`           | Zet `repos/` op de geïnstalleerde versies.                                       |
+| `bun run repos:check`          | Faalt als `repos/` afwijkt van de geïnstalleerde versies.                        |
+| `docker compose up -d`         | Start de lokale Postgres (`docker-compose.yml`). Stoppen: `docker compose down`. |
+| `bun run db:generate`          | Maakt een migratie uit de tabellen (`src/**/*Table.ts` in `apps/api`).           |
+| `bun run db:migrate`           | Voert de migraties uit tegen `DATABASE_URL`.                                     |
+| `bun run db:studio`            | Opent Drizzle Studio.                                                            |
+| `bun run --cwd apps/api dev`   | Start de API lokaal met `wrangler dev` op `http://localhost:8787`.               |
+| `bun run --cwd apps/api types` | Genereert het type `Env` opnieuw uit `wrangler.jsonc` (`wrangler types`).        |
 
 De `db:*`-scripts lezen `DATABASE_URL` uit `apps/api/.dev.vars`. Kopieer eerst `apps/api/.dev.vars.example` naar `apps/api/.dev.vars`; die wijst naar de Docker-database. Zie `docs/patterns/drizzle.md` (Migraties).
 

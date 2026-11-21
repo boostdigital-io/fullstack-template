@@ -1,10 +1,10 @@
 # packages/contract
 
-Het contract: de HttpApi-definitie die de API implementeert en web (en later mobile) als getypte client gebruikt. Nu staat alleen `src/index.ts` er. Bestandsnamen zoals `todosGroup.ts` zijn voorbeelden uit de referentie-feature `todos`, die in `example/todos/` komt _(BOO-122)_.
+Het contract: de HttpApi-definitie die de API implementeert en web (en later mobile) als getypte client gebruikt. Nu staat er een lege `Api` zonder groepen. Bestandsnamen zoals `todosGroup.ts` zijn voorbeelden uit de referentie-feature `todos`, die in `example/todos/` komt _(BOO-122)_.
 
 ## Wat erin hoort
 
-- **`src/api.ts`**: de `Api`, die alle groepen samenvoegt _(komt in BOO-117)_.
+- **`src/api.ts`**: de `Api`, die alle groepen samenvoegt.
 - **Groepen** per feature (`todosGroup.ts`): endpoints met `params`, `query`, `payload` en `success`, gebouwd uit de value objects van het domein.
 - **Domeinfouten met statuscode** per endpoint: `error: TodoNotFound.pipe(HttpApiSchema.status(404))`. Het contract gebruikt de domeinfouten direct ([ADR 0014](../../docs/decisions/0014-domain-errors-in-contract.md)).
 - **Wat de middleware nodig heeft**, in `src/shared/` _(komt in BOO-125)_: `authErrors.ts` (`Unauthorized`), `currentUser.ts` (`CurrentUser`) en `authentication.ts` (de middleware-definitie).

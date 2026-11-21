@@ -1,2 +1,7 @@
-# Kopieer naar .dev.vars. Deze waarden horen bij de Docker-database uit docker-compose.yml.
+# Kopieer naar .dev.vars. Geen echte secrets: deze waarden horen bij de lokale opzet.
+
+# Alleen voor drizzle-kit (db:*-scripts). De Worker praat via Hyperdrive, zie wrangler.jsonc.
 DATABASE_URL=postgres://fullstack_template:fullstack_template@localhost:5432/fullstack_template
+
+# Een van All, Fatal, Error, Warn, Info, Debug, Trace, None. Zonder waarde: Info.
+LOG_LEVEL=Info
