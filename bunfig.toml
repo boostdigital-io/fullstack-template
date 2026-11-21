@@ -3,3 +3,7 @@
 linker = "isolated"
 # Nieuwe dependencies krijgen een exacte versie, zonder ^.
 exact = true
+
+[test]
+# `bun test` is een andere runner dan Vitest en vindt dezelfde `*.test.ts`-bestanden (ADR 0016).
+preload = ["./scripts/blockBunTest.ts"]
